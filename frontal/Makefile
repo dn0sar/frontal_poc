@@ -6,8 +6,10 @@ ifeq ($(SGX_SDK),)
     SGX_SDK          = /opt/intel/sgxsdk
 endif
 export SGX_SDK
-ifneq ($(SGX_SDK), /opt/intel/sgxsdk)
-    URTS_LD_LIBRARY_PATH = LD_LIBRARY_PATH=$(LIBSGXSTEP_DIR)/linux-sgx/psw/urts/linux
+ifndef URTS_LD_LIBRARY_PATH 
+    ifneq ($(SGX_SDK), /opt/intel/sgxsdk)
+        URTS_LD_LIBRARY_PATH = LD_LIBRARY_PATH=$(LIBSGXSTEP_DIR)/linux-sgx/psw/urts/linux
+    endif
 endif
 
 ENCLAVE              = Enclave
