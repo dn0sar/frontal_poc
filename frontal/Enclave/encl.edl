@@ -1,0 +1,23 @@
+enclave {
+	
+	trusted {
+   	    public void do_asm_secret_branch(
+						[user_check] uint8_t *do_cnt_instr,
+						[user_check] uint8_t *secret_arr,
+						int secret_arr_size
+                    );
+
+		public void do_asm_ipp(
+                        [user_check] uint8_t *do_cnt_instr,
+                        [user_check] uint8_t *secret_arr,
+                        int num_tests,
+                        int BN_size
+                    );
+        
+        public void *get_asm_secret_branch_adrs( void );
+		public void *get_asm_ipp_adrs( void );
+	};
+	
+	untrusted {
+	};
+};

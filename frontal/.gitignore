@@ -1,0 +1,14 @@
+app
+logs
+plots
+outlier_idx.txt
+plot.pdf
+xlabels.gp
+logs
+
+*.swp
+
+out.txt
+parsed_nop.txt
+parsed_zz.txt
+parsed_strlen.txt
