@@ -316,7 +316,7 @@ int main(int argc, char **argv)
     fprintf(fp, "Testing instruction: test \%rax, \%rax\tmov \%rcx, -8(\%rsp)\n");
     fprintf(fp, "cycles, secret\n");
 
-    int abnormarl = 0;
+    int abnormal = 0;
     #if (ATTACK_SCENARIO == MICROBENCH)
     size_t secret_ctr = 0;
     int old_i = 0;
@@ -326,7 +326,7 @@ int main(int argc, char **argv)
             fprintf(sf, "%d\n", secret_arr[secret_ctr]);
             fprintf(fp, "-\n");
             if (num_per_run != 1 + NUM_INSTR * 2 + (1 - secret_arr[secret_ctr]) ) {
-                abnormarl++;
+                abnormal++;
             }
             secret_ctr++;
             num_per_run = 0;
@@ -357,8 +357,8 @@ int main(int argc, char **argv)
     free(do_cnt_instr);
     free(secret_arr);
 
-    if (abnormarl) {
-        error("Detected %d abnormal runs.. Try to tweak the SGX_STEP_TIMER_INTERVAL value. (Currently it's probably too high)\n", abnormarl);
+    if (abnormal) {
+        error("Detected %d abnormal runs.. Try to tweak the SGX_STEP_TIMER_INTERVAL value. (Currently it's probably too high)\n", abnormal);
         return -1;
     }
     return 0;
