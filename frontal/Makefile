@@ -1,4 +1,5 @@
-LIBSGXSTEP_DIR       = ../sgx-step
+PROJECT_TOP          = ../
+LIBSGXSTEP_DIR       = $(PROJECT_TOP)/sgx-step
 LIBSGXSTEP           = $(LIBSGXSTEP_DIR)/libsgxstep
 -include $(LIBSGXSTEP)/Makefile.config
 
@@ -33,7 +34,7 @@ export ATTACKER_SYNC
 
 CFLAGS              += -fPIC -fno-stack-protector -fno-builtin -fno-jump-tables \
                        -fno-common -Wno-attributes -g -D_GNU_SOURCE -O0
-INCLUDE              = -I$(SGX_SDK)/include/ -I$(LIBSGXSTEP_DIR)
+INCLUDE              = -I$(PROJECT_TOP) -I$(SGX_SDK)/include/ -I$(LIBSGXSTEP_DIR)
 LDFLAGS             += -lsgx-step -lencl_proxy -lsgx_urts \
                        -lsgx_uae_service -pthread $(SUBDIRS:%=-L %) -L$(SGX_SDK)/lib$(LIB_SUFX)/ \
                        -L$(LIBSGXSTEP_DIR)/linux-sgx/psw/urts/linux

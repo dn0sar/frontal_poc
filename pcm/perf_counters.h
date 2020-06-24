@@ -11,7 +11,7 @@
 extern "C" {
 #endif
     int pcm_c_add_core_event(const char * argv);
-    int get_number_of_set_events();
+    int pcm_c_get_number_of_set_events();
     int pcm_c_get_max_supported_counters();
     int pcm_c_init();
     void pcm_c_start();

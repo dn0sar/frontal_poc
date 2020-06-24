@@ -102,7 +102,7 @@ typedef struct measurement_t
     // uint32_t page_nr;
     uint8_t accessed;
     uint8_t do_count;
-#if PCM_INSTR_ENABLED
+#if PCM_ENABLED
     uint64_t pcms[NUM_PCMS];
 #endif
 } measurement_t;
@@ -342,7 +342,7 @@ int perf_counter_init(int argc, const char **argv) {
 int log_timing_results(uint8_t *secret_arr, int secret_size) {
     const char* fname = "./logs/measurements.txt"; 
     const char* sname = "./logs/secrets.txt";
-    int i;
+    int i, pcms_print_inx;
     FILE *sf = fopen(sname, "w");
 
     info("saving the measurements to %s:", fname);
@@ -375,7 +375,11 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
             num_per_run = 0;
         } else {
             fprintf(fp, "%d, %d", log_arr[i].cycles, secret_arr[secret_inx]);
-            //TODO: add events if enabled here.
+            #if PCM_ENABLED
+            for (pcms_print_inx = 0; pcms_print_inx < NUM_PCMS; pcms_print_inx++) {
+                fprintf(fp, ", %lu", log_arr[i].pcms[pcms_print_inx]);
+            }
+            #endif
             fprintf(fp, "\n");
             num_per_run++;
         }
@@ -384,6 +388,11 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
     for (i = 0; i < log_arr_size; i++) {
         if (log_arr[i].do_count && old_cnt) {
             fprintf(fp, "%d, %d, %d", log_arr[i].cycles, secret_arr[secret_inx], secret_arr[secret_inx+1]);
+            #if PCM_ENABLED
+            for (pcms_print_inx = 0; pcms_print_inx < NUM_PCMS; pcms_print_inx++) {
+                fprintf(fp, ", %lu", log_arr[i].pcms[pcms_print_inx]);
+            }
+            #endif
             fprintf(fp, "\n");
         }
         if (!log_arr[i].do_count && old_cnt) {
@@ -435,7 +444,7 @@ void __attribute__((destructor)) cleanup() {
 /* ================== ATTACKER MAIN ================= */
 
 /* Untrusted main function to create/enter the trusted enclave. */
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
     sgx_launch_token_t token = {0};
     int apic_fd, encl_strlen = 0, updated = 0;
