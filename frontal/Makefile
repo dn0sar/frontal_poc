@@ -1,4 +1,4 @@
-PROJECT_TOP          = ../
+PROJECT_TOP          = ..
 LIBSGXSTEP_DIR       = $(PROJECT_TOP)/sgx-step
 LIBSGXSTEP           = $(LIBSGXSTEP_DIR)/libsgxstep
 -include $(LIBSGXSTEP)/Makefile.config
@@ -14,7 +14,7 @@ ifndef URTS_LD_LIBRARY_PATH
 endif
 
 ENCLAVE              = Enclave
-PCU_DIR				 = $(LIBSGXSTEP_DIR)/pcm
+PCU_DIR				 = $(PROJECT_TOP)/pcm
 SUBDIRS              = $(ENCLAVE) $(LIBSGXSTEP)
 
 CC                   = gcc
@@ -45,9 +45,6 @@ PCM_OBJ              = $(PCU_DIR)/mylibPCM.a
 OBJECTS              = $(SOURCES:.c=.o)
 OUTPUT               = app
 
-BUILDDIRS            = $(SUBDIRS:%=build-%)
-CLEANDIRS            = $(SUBDIRS:%=clean-%)
-
 # Used to enable the collection and plotting of performance counters
 ifeq ($(PCM_ENABLED), 1)
         LIBSUBDIRS              += $(PCU_DIR)
@@ -64,6 +61,11 @@ else
         PCM_INSTR_ENABLED = 0
 endif
 
+BUILDDIRS						= $(SUBDIRS:%=build-%)
+LIBBUILDDIRS                    = $(LIBSUBDIRS:%=build-%)
+CLEANDIRS						= $(SUBDIRS:%=clean-%)
+LIBCLEANDIRS                    = $(LIBSUBDIRS:%=clean-%)
+LOGS							= $(wildcard logs/*.log) logs/out.txt logs/secrets.txt logs/measurements.txt
 
 ifndef NUM
     NUM             = 100
@@ -91,7 +93,7 @@ run: clean all
 	mkdir -p logs
 	touch logs/out.txt
 	tail -f logs/out.txt & TAIL_PID=$$!
-	$(URTS_LD_LIBRARY_PATH) ./app > logs/out.txt || EXIT_CODE=$$?
+	$(URTS_LD_LIBRARY_PATH) ./app $(EVENTS) > logs/out.txt || EXIT_CODE=$$?
 	kill -TERM $$TAIL_PID
 	exit $$EXIT_CODE
 
@@ -118,7 +120,7 @@ plot-all: parse
 	for i in {1..${NUM_INSTR}}; do ./plot.py -o plots logs/movs_$$((i-1))_${NUM}.log; done
 endif
 
-$(OUTPUT): $(BUILDDIRS) $(OBJECTS)
+$(OUTPUT): $(BUILDDIRS) $(LIBBUILDDIRS) $(OBJECTS)
 	echo "$(INDENT)[LD]" $(OBJECTS) $(LIBS) -o $(OUTPUT) 
 	$(LD) $(OBJECTS) $(LDFLAGS) -o $(OUTPUT) 
 
@@ -133,11 +135,20 @@ $(OUTPUT): $(BUILDDIRS) $(OBJECTS)
 clean: $(CLEANDIRS)
 	echo "$(INDENT)[RM]" $(OBJECTS) $(OUTPUT)
 	rm -f $(OBJECTS) $(OUTPUT)
+	rm -f $(LOGS)
 
 $(BUILDDIRS):
 	echo "$(INDENT)[===] $(@:build-%=%) [===]"
 	$(MAKE) -C $(@:build-%=%) INDENT+="$(INDENT_STEP)" M32=$(M32) curr-dir=$(curr-dir)/$(@:build-%=%)
 
+$(LIBBUILDDIRS):
+	echo "$(INDENT)[===] $(@:build-%=%) [===]"
+	$(MAKE) lib -C $(@:build-%=%) INDENT+="$(INDENT_STEP)" curr-dir=$(curr-dir)/$(@:build-%=%)
+
 $(CLEANDIRS):
+	echo "$(INDENT)[===] $(@:clean-%=%) [===]"
+	$(MAKE) clean -C $(@:clean-%=%) INDENT+="$(INDENT_STEP)" curr-dir=$(curr-dir)/$(@:build-%=%)
+
+$(LIBCLEANDIRS):
 	echo "$(INDENT)[===] $(@:clean-%=%) [===]"
 	$(MAKE) clean -C $(@:clean-%=%) INDENT+="$(INDENT_STEP)" curr-dir=$(curr-dir)/$(@:build-%=%)
