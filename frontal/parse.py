@@ -22,10 +22,7 @@ def load_file(fname):
     with open(fname, "r") as file:
         file.readline()  # testname (ignored for now)
         events = file.readline()
-        if ("events" in events):
-            events = "(" + events.split("(")[1].split(")")[0] + ")"
-        else:
-            events=''
+        events = ("(" + events.split("(")[1].split(")")[0] + ")") if ("events" in events) else ''
         file.readline()  # file structure
         for line in file:
             if line.startswith('-'):
@@ -36,8 +33,7 @@ def load_file(fname):
             else:
                 d = [int(x) for x in line.split(", ")]
                 curr_secret = d[1]
-                del d[1]
-                iter_cycles.append(d)
+                iter_cycles.append([d[0]] + d[2:])
     return data, secrets, events
 
 def split_into_instructions(data, secrets, num_instr):

@@ -65,7 +65,7 @@
 #endif
 
 #define MICROBENCH 1
-#define IPP_LIB 4
+#define IPP_LIB 2
 #ifndef ATTACK_SCENARIO
 #define ATTACK_SCENARIO MICROBENCH
 #endif
