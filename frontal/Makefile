@@ -65,7 +65,7 @@ BUILDDIRS						= $(SUBDIRS:%=build-%)
 LIBBUILDDIRS                    = $(LIBSUBDIRS:%=build-%)
 CLEANDIRS						= $(SUBDIRS:%=clean-%)
 LIBCLEANDIRS                    = $(LIBSUBDIRS:%=clean-%)
-LOGS							= $(wildcard logs/*.log) logs/out.txt logs/secrets.txt logs/measurements.txt
+LOGS							= $(wildcard logs/*.log) logs/out.txt logs/secrets.txt logs/measurements.txt logs/ipp_meas.txt
 
 ifndef NUM
     NUM             = 100
@@ -81,7 +81,7 @@ export ALIGN1
 export ALIGN2
 export SGX_STEP_TIMER_INTERVAL
 
-CFLAGS              += -DATTACK_SCENARIO=$(ATTACK_SCENARIO) -DNUM_RUNS=$(NUM) -DSGX_STEP_TIMER_INTERVAL=${SGX_STEP_TIMER_INTERVAL} -DPCM_ENABLED=$(PCM_ENABLED)
+CFLAGS              += -DATTACK_SCENARIO=$(ATTACK_SCENARIO) -DNUM_RUNS=$(NUM) -DSGX_STEP_TIMER_INTERVAL=${SGX_STEP_TIMER_INTERVAL} -DPCM_ENABLED=$(PCM_ENABLED) -DNUM_PCMS=${NUM_PCMS}
 
 .SILENT:
 .ONESHELL: run
@@ -110,7 +110,7 @@ parse: run
 
 plot: parse
 	mkdir -p plots
-	./plot.py -o plots logs/movs_0_${NUM}.log; done
+	./plot.py -o plots logs/movs_0_${NUM}.log
 	# The following will compute the success probability based on the first mov
 	./attack_success.py -j 1 -s $$(( 2 * $(NUM_INSTR) + 1 )) -i 2 logs/measurements.txt logs/secrets.txt 
 

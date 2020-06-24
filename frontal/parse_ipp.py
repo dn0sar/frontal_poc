@@ -88,7 +88,7 @@ print("Test name addition: different_branches")
 for part_num, comb in enumerate(instr_dict):
     print(f'Avg execution time of {instr_dict[comb][1]} path ({avgs[part_num][1]} occurrences):\t{avgs[part_num][0]}', file=sys.stderr)
 
-    print(f"Testing instruction {instr_dict[comb][2]} ({instr_dict[comb][1]}) (runs: {avgs[part_num][1]}, interval: 47, part: {part_num + 1}/{len(instr_dict)})")
+    print(f"Testing instruction {instr_dict[comb][2]} ({instr_dict[comb][1]}) (runs: {avgs[part_num][1]}, part: {part_num + 1}/{len(instr_dict)})")
     for cy, s in ms_tuples:
         #s1, s2 = s
         #if (not s1 and not s2): s1, s2 = (True, True)

@@ -313,6 +313,13 @@ void add_event(const char * descr) {
 
 int perf_counter_init(int argc, const char **argv) {
     int args_inx;
+
+    if (NUM_PCMS > pcm_c_get_max_supported_counters()) {
+        error("The maximum number of performance counters (PCMs) supported is %d, however %d PCMs have been requested. Please re-run with less PCMs.", \
+               pcm_c_get_max_supported_counters(), NUM_PCMS);
+        exit(1);
+    }
+
     for (args_inx = 1; args_inx < argc; args_inx++) {
         add_event(argv[args_inx]);
     }
@@ -322,15 +329,9 @@ int perf_counter_init(int argc, const char **argv) {
                have been provided. Please input them as command line args.\n");
         exit(1);
     }
-    
+
     // Check whether more perf counters where defined
     ASSERT( pcm_c_get_number_of_set_events() == NUM_PCMS );
-
-    if (NUM_PCMS > pcm_c_get_max_supported_counters()) {
-        error("The maximum number of performance counters (PCMs) supported is %d,\
-               however %d PCMs have been requested. Please re-run with less PCMs.\n");
-        exit(1);
-    }
 
     int result = pcm_c_init();
     if (result != 0) {
@@ -350,7 +351,15 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
     info("saving the measurements to %s:", fname);
     FILE *fp = fopen(fname, "w");
     fprintf(fp, "Test name: secret_branch\n");
-    fprintf(fp, "Testing instruction: test \%rax, \%rax\tmov \%rcx, -8(\%rsp)\n");
+    fprintf(fp, "All instructions timing. Scenario: %d.", ATTACK_SCENARIO);
+    #if PCM_ENABLED
+        fprintf(fp, " (events:");
+        for (i = 0; i < NUM_PCMS; i++) {
+            fprintf(fp, " %s", event_desc[i]);
+        }
+        fprintf(fp, ")");
+    #endif
+    fprintf(fp, "\n", NUM_RUNS);
     fprintf(fp, "cycles, secret");
     #if (ATTACK_SCENARIO == IPP_LIB)
         fprintf(fp, "b1, secretb2");

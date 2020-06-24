@@ -2,8 +2,6 @@
 
 import argparse
 import numpy as numpy
-import matplotlib
-import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-r", "--num_runs", help="number of runs of the branch", type=int, required=True)
@@ -20,9 +18,14 @@ def load_file(fname):
     secrets = []
     iter_cycles = []
     curr_secret = 0
+    events = ""
     with open(fname, "r") as file:
         file.readline()  # testname (ignored for now)
-        file.readline()  # test details (ignored for now)
+        events = file.readline()
+        if ("events" in events):
+            events = "(" + events.split("(")[1].split(")")[0] + ")"
+        else:
+            events=''
         file.readline()  # file structure
         for line in file:
             if line.startswith('-'):
@@ -31,10 +34,11 @@ def load_file(fname):
                 secrets.append(curr_secret)
                 iter_cycles = []
             else:
-                d = line.split(", ")
-                iter_cycles.append(int(d[0]))
-                curr_secret = int(d[1])
-    return data, secrets
+                d = [int(x) for x in line.split(", ")]
+                curr_secret = d[1]
+                del d[1]
+                iter_cycles.append(d)
+    return data, secrets, events
 
 def split_into_instructions(data, secrets, num_instr):
     # we have to split our trace into movs and tests
@@ -61,12 +65,13 @@ def split_into_instructions(data, secrets, num_instr):
     return tests, movs, inx_skipped
 
 
-data, secrets = load_file("logs/measurements.txt")
+data, secrets, events = load_file("logs/measurements.txt")
 
 tests, movs, skipped = split_into_instructions(data, secrets, num_instr)
 
 num_ones = sum([x for i,x in enumerate(secrets) if i not in skipped])
 num_zeros = sum([x ^ 1 for i,x in enumerate(secrets) if i not in skipped])
+num_per_secret = [num_zeros, num_ones]
 
 print(f"num runs: {num_runs}, zeros: {num_zeros}, ones: {num_ones}")
 
@@ -74,39 +79,28 @@ print(f"num movs: {len(movs)}, num tests: {len(tests)}")
 
 for instr_index in range(num_instr):
     with open(f"logs/movs_{instr_index}_{num_runs}.log", "w") as file:
-        
-        
         file.write(f"Test name addition: pair{instr_index}\n")
-        file.write(
-            f"Testing instruction branch0 movq %rcx, -8(%rsp) (runs: {num_zeros}, interval: 43, part: 1/4)\n")
-        for run in range(num_runs):
-            if run in skipped:
-                continue
-            if secrets[run] == 0:
-                file.write(
-                    f"{movs[run][instr_index]}, 1, {secrets[run]}\n")
-        file.write(
-            f"Testing instruction branch1 movq %rcx, -8(%rsp) (runs: {num_ones}, interval: 43, part: 2/4)\n")
-        for run in range(num_runs):
-            if run in skipped:
-                continue
-            if secrets[run] == 1:
-                file.write(
-                    f"{movs[run][instr_index]}, 1, {secrets[run]}\n")
 
-        file.write(
-            f"Testing instruction branch0 test %rax, %rax (runs: {num_zeros}, interval: 43, part: 3/4)\n")
-        for run in range(num_runs):
-            if run in skipped:
-                continue
-            if secrets[run] == 0:
-                file.write(
-                    f"{tests[run][instr_index]}, 1, {secrets[run]}\n")
-        file.write(
-            f"Testing instruction branch1 test %rax, %rax (runs: {num_ones}, interval: 43, part: 4/4)\n")
-        for run in range(num_runs):
-            if run in skipped:
-                continue
-            if secrets[run] == 1:
-                file.write(
-                    f"{tests[run][instr_index]}, 1, {secrets[run]}\n")
+        for secret in range(2):
+            file.write(
+                f"Testing instruction branch{secret} movq %rcx, -8(%rsp) {events}(runs: {num_per_secret[secret]}, part: {secret+1}/4)\n")
+            for run in range(num_runs):
+                if run in skipped:
+                    continue
+                if secrets[run] == secret:
+                    for inx, val in enumerate(movs[run][instr_index]):
+                        if inx: file.write(", ")
+                        file.write(f"{val}")
+                    file.write("\n")
+
+        for secret in range(2):
+            file.write(
+                f"Testing instruction branch{secret} test %rax, %rax {events}(runs: {num_per_secret[secret]}, part: {secret+3}/4)\n")
+            for run in range(num_runs):
+                if run in skipped:
+                    continue
+                if secrets[run] == secret:
+                    for inx, val in enumerate(tests[run][instr_index]):
+                        if inx: file.write(", ")
+                        file.write(f"{val}")
+                    file.write("\n")

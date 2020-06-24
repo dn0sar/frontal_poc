@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 #--------------------------------------------------------------------------------
-# This script parses the output of the poor man's cmov side channel
+# This script parses the output of the frontal attack PoC
 # and outputs the precision (how many branches were detected correctly)
 #--------------------------------------------------------------------------------
 

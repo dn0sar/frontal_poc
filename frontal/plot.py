@@ -212,33 +212,17 @@ with open(data_file_path, "r") as data_file:
                 if do_split:
                     cycles = (cycles, i)
 
-                if (len(msr_str) > 1):
-                    # Do not consider measurements at page boundaries, they are much
-                    # slower since their page has to be fetched first. 
-                    # This only increases the variance.
-                    page_nr     = int(msr_str[1])
-                    do_append   = old_page_nr == page_nr
-                else:
-                    do_append = True
                 # Apply page filters here if you want to inspect only
                 # certain pages, for example:
                 # 
                 #if page_nr % 2 == 0:
                 #if page_nr == 1 or page_nr == 197:
 
-                if do_append:
-                    data[nr_of_parts].append( cycles )
-                    [ events[nr_of_parts][ev].append((int(msr_str[ev + 2]),i)) for ev in range(nr_events) ]
-                    
-                else:
-                    # Don't filter for bars (would shift instr counting) but save
-                    # index to remove values later.
-                    if plot_bars:
-                        data[nr_of_parts].append( cycles )
-                        [ events[nr_of_parts][ev].append((int(msr_str[ev + 2])), i) for ev in range(nr_events) ]
-                        page_border_idx[nr_of_parts].append(i)
-                    
-                    old_page_nr = page_nr
+                data[nr_of_parts].append( cycles )
+                [ events[nr_of_parts][ev].append(int(msr_str[ev + 1])) for ev in range(nr_events) ]
+                if do_split:
+                    for ev in range(nr_events):
+                        events[nr_of_parts][ev][-1] = (events[nr_of_parts][ev][-1], i)
             
             if subsample_num:
                 runs = subsample_num
