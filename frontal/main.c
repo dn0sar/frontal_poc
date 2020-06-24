@@ -377,6 +377,7 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
     int abnormarl = 0;
     int old_cnt = 0;
     int secret_inx = 0;
+    //TODO: Unify logging for the two test cases so it's easier to read
     #if (ATTACK_SCENARIO == MICROBENCH)
     int num_per_run = 0;
     for (i = 0; secret_inx < NUM_RUNS; i++) {
@@ -400,8 +401,10 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
     }
     #elif (ATTACK_SCENARIO == IPP_LIB)
     for (i = 0; i < log_arr_size; i++) {
+        // This condition excludes the 'call' timing at line 45 in asm_ipp_mock.S from the log
+        // And starts counting from inside the function
         if (log_arr[i].do_count && old_cnt) {
-            fprintf(fp, "%d, %d, %d", log_arr[i].cycles, secret_arr[secret_inx], secret_arr[secret_inx+1]);
+            fprintf(fp, "%d, %d", log_arr[i].cycles, secret_arr[secret_inx]);
             #if PCM_ENABLED
             for (pcms_print_inx = 0; pcms_print_inx < NUM_PCMS; pcms_print_inx++) {
                 fprintf(fp, ", %lu", log_arr[i].pcms[pcms_print_inx]);
@@ -411,7 +414,7 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
         }
         if (!log_arr[i].do_count && old_cnt) {
             fprintf(fp, "-\n");
-            secret_inx += 2;
+            secret_inx++;
         }
         // increment secret
         old_cnt = log_arr[i].do_count;
@@ -499,6 +502,11 @@ int main(int argc, const char **argv)
     info("generating random secret");
     int secret_arr_size;
     uint8_t *secret_arr;
+    int max_rand_val = 2;
+
+    #if ATTACK_SCENARIO == IPP_LIB
+        max_rand_val = 3;
+    #endif
 
     secret_arr_size = NUM_RUNS;
     secret_arr = malloc(secret_arr_size);
@@ -506,7 +514,7 @@ int main(int argc, const char **argv)
     //srand(0);
     srand(time(NULL));
     for (int i = 0; i < secret_arr_size; i++) {
-        secret_arr[i] = rand() % 2;
+        secret_arr[i] = rand() % max_rand_val;
     }
     // ASSERT(syscall(SYS_getrandom, secret_arr, secret_arr_size, 0));
 
@@ -514,7 +522,9 @@ int main(int argc, const char **argv)
     #if (ATTACK_SCENARIO == MICROBENCH)
         log_arr_size = NUM_RUNS * (NUM_INSTR * 2 + 3);
     #elif (ATTACK_SCENARIO == IPP_LIB)
-        log_arr_size = NUM_RUNS * (BIN_NUM_LEN * 5 + 6 + 11);
+        // Note: THe log array should be big enough otherwise it will trigger a segmentation fault
+        // while measuring
+        log_arr_size = NUM_RUNS * (BIN_NUM_LEN * 6 + 14); 
     #endif
     ASSERT(log_arr = (measurement_t *)calloc(log_arr_size, sizeof(measurement_t)));
 

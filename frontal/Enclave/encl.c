@@ -36,8 +36,7 @@ void do_asm_secret_branch(uint8_t *do_cnt_instr, uint8_t *secret_arr,
 
     uint64_t *arr = calloc(52, sizeof(uint64_t));
 
-    for (i = 0; i < secret_arr_size; ++i)
-    {
+    for (i = 0; i < secret_arr_size; i++) {
         asm_secret_branch(do_cnt_instr, secret_arr[i], arr);
     }
     free(arr);
@@ -52,10 +51,14 @@ void do_asm_ipp(uint8_t *do_cnt_instr, uint8_t *secret_arr,
     num1 = calloc(BN_size, sizeof(uint64_t));
     num2 = calloc(BN_size, sizeof(uint64_t));
 
-    for (i = 0; i < num_tests; i += 2)  {
-        // This creates aritifical cases depending on the secret array bits
-        num1[0] = secret_arr[i];
-        num2[0] = secret_arr[i + 1];
+    for (i = 0; i < num_tests; i++)  {
+        // We set num1 and num2 such that the following paths are taken in asp_ipp:
+        // secret = 0 -> equal
+        // secret = 1 -> bigger
+        // secret = 2 -> smaller
+        num1[0] = secret_arr[i] & 1;
+        num2[0] = secret_arr[i] >> 1;
+
         // Note: This has been added here cause these registers are clobbered in the
         // asm_ipp_mock*.S assembly files. 
         asm volatile ("":::"%r9", "%r10", "%r11");

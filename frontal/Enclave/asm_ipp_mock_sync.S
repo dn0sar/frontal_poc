@@ -29,8 +29,8 @@
 # uint64_t * num1, uint64_t * num2, uint64_t *res, do_cnt_instr
 
 # Registers used by the function
-# rdi, rsi, rdx, rcx, rax, r9, r10, r11, r12
-# Registers to declare as clobbers in C: r9, r10, r11, r12
+# rdi, rsi, rdx, rcx, rax, r9, r10, r11
+# Registers to declare as clobbers in C: r9, r10, r11
 
 
 asm_ipp:
@@ -81,7 +81,7 @@ asm_ipp:
 .equal_end:
     mov     %ecx, (%rdx)             # 8
     xor     %eax, %eax               # 9
-    jmp .end                        # 10
+    jmp .end                         # 10
 
 .align 0x10
 l9_ippsCmp_BN:
@@ -109,7 +109,7 @@ l9_ippsCmp_BN:
     movzx   %cl, %ecx                # 6
     inc     %ecx                     # 7
     mov     %ecx, (%rdx)             # 8
-    jmp .end                        # 9
+    jmp .end                         # 9
     
 
 .align 0x10
@@ -120,7 +120,7 @@ l9_ippsCmp_BN:
     movzx   %cl, %ecx                # 8
     inc     %ecx                     # 9
     mov     %ecx, (%rdx)             # 10
-    jmp .end                          # 11
+    jmp .end                         # 11
 
     /* 4KiB space; ensures that next page after code has no other code in it
        to make sure no false-positive page accesses happen when we are mesuring*/

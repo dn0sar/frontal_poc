@@ -31,12 +31,9 @@ iter_idx            = 0
 # as the other paths.
 instr_dict = {}
 #instr_dist[(secret_combination)] = [target instr inx, path, instruction description]
-instr_dict[(True, False)]  = [-2, 'bigger',  'mov     %ecx, (%rdx)']
-instr_dict[(False, True)]  = [-2, 'smaller', 'mov     %ecx, (%rdx)']
-instr_dict[(True, True)]   = [-3, 'equal',   'mov     %ecx, (%rdx)']
-# The last combination is skipped because is redundant. It's the same as
-# (True, True), but it's just a propduct of how the secrets are generated
-# instr_dict[(False, False)] = [-3, 'equal (F,F)', 'mov     %ecx, (%rdx)']
+instr_dict[0]  = [-3, 'equal',   'mov     %ecx, (%rdx)']
+instr_dict[1]  = [-2, 'bigger',  'mov     %ecx, (%rdx)']
+instr_dict[2]  = [-2, 'smaller', 'mov     %ecx, (%rdx)']
 
 # Read measurements into a list together with the true secret values
 if (iter_num):
@@ -56,7 +53,7 @@ with open(log_file_path, "r") as log_file:
             info = iter_info
             
             if not iter_num: ms_tuples.append([])
-            ms_tuples[iter_idx] = (info, (int(secret_b1) > 0, int(secret_b2) > 0))
+            ms_tuples[iter_idx] = (info, secret)
             iter_idx += 1
 
             iter_info = []
@@ -65,9 +62,8 @@ with open(log_file_path, "r") as log_file:
             events = ("(" + line.split("(")[1].split(")")[0] + ")") if ("events" in line) else events
         else:
             line_items = [int(x) for x in line.split(", ")]
-            secret_b1 = line_items[1]
-            secret_b2 = line_items[2]
-            iter_info.append([line_items[0]] + line_items[3:])
+            secret = line_items[1]
+            iter_info.append([line_items[0]] + line_items[2:])
 
 print("Found events " + events, file=sys.stderr)
 
