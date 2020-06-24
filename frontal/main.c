@@ -153,7 +153,9 @@ uint64_t aep_cb_func(void) {
         uint64_t cycles = nemesis_tsc_aex - nemesis_tsc_eresume;
         log_arr[cur_measurement_index] = (measurement_t){cycles, ACCESSED(*pte_encl), *do_cnt_instr};
         #if PCM_ENABLED
+        for (i = 0; i < NUM_PCMS; i++) {
             log_arr[cur_measurement_index].pcms[i] = pcms[i];
+        }
         #endif
         cur_measurement_index += ACCESSED(*pte_encl);
     }
