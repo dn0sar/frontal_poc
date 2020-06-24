@@ -52,7 +52,7 @@ void do_asm_ipp(uint8_t *do_cnt_instr, uint8_t *secret_arr,
     num1 = calloc(BN_size, sizeof(uint64_t));
     num2 = calloc(BN_size, sizeof(uint64_t));
 
-    for (i = 0; i < num_tests; i+=2)  {
+    for (i = 0; i < num_tests; i += 2)  {
         // This creates aritifical cases depending on the secret array bits
         num1[0] = secret_arr[i];
         num2[0] = secret_arr[i + 1];

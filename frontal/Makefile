@@ -13,6 +13,7 @@ ifndef URTS_LD_LIBRARY_PATH
 endif
 
 ENCLAVE              = Enclave
+PCU_DIR				 = $(LIBSGXSTEP_DIR)/pcm
 SUBDIRS              = $(ENCLAVE) $(LIBSGXSTEP)
 
 CC                   = gcc
@@ -38,11 +39,30 @@ LDFLAGS             += -lsgx-step -lencl_proxy -lsgx_urts \
                        -L$(LIBSGXSTEP_DIR)/linux-sgx/psw/urts/linux
 
 SOURCES              = $(shell ls *.c)
+PCM_SOURCES          = $(PCU_DIR)/msr.cpp $(PCU_DIR)/cpucounters.cpp $(PCU_DIR)/pci.cpp $(PCU_DIR)/mmio.cpp $(PCU_DIR)/client_bw.cpp $(PCU_DIR)/utils.cpp $(PCU_DIR)/perf_counters.cpp
+PCM_OBJ              = $(PCU_DIR)/mylibPCM.a
 OBJECTS              = $(SOURCES:.c=.o)
 OUTPUT               = app
 
 BUILDDIRS            = $(SUBDIRS:%=build-%)
 CLEANDIRS            = $(SUBDIRS:%=clean-%)
+
+# Used to enable the collection and plotting of performance counters
+ifeq ($(PCM_ENABLED), 1)
+        LIBSUBDIRS              += $(PCU_DIR)
+        OBJECTS         		+= $(PCM_OBJ)
+        LD            		    = g++
+        SGX_MODE          		= SGX_PRERELEASE
+        PCM_SILENT				= 1
+        export PCM_SILENT
+    ifdef EVENTS
+        NUM_PCMS=$(words $(EVENTS))
+    endif
+else
+        PCM_ENABLED       = 0
+        PCM_INSTR_ENABLED = 0
+endif
+
 
 ifndef NUM
     NUM             = 100
@@ -58,7 +78,7 @@ export ALIGN1
 export ALIGN2
 export SGX_STEP_TIMER_INTERVAL
 
-CFLAGS              += -DATTACK_SCENARIO=$(ATTACK_SCENARIO) -DNUM_RUNS=$(NUM) -DSGX_STEP_TIMER_INTERVAL=${SGX_STEP_TIMER_INTERVAL}
+CFLAGS              += -DATTACK_SCENARIO=$(ATTACK_SCENARIO) -DNUM_RUNS=$(NUM) -DSGX_STEP_TIMER_INTERVAL=${SGX_STEP_TIMER_INTERVAL} -DPCM_ENABLED=$(PCM_ENABLED)
 
 .SILENT:
 .ONESHELL: run
