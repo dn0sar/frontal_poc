@@ -46,7 +46,10 @@
 #endif
 
 #ifndef SGX_STEP_TIMER_INTERVAL
-#error "The SGX_STEP_TIMER_INTERVAL variable must be defined at compile time."
+    #error The SGX_STEP_TIMER_INTERVAL variable must be defined at compile time.
+    // The following line just suppresses other compile errors that derive from this
+    // So that the compilation output is a bit more clean
+    #define SGX_STEP_TIMER_INTERVAL 0
 #endif
 
 #define EDBGRD 0
