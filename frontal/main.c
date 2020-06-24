@@ -62,7 +62,6 @@ int strlen_nb_access = 0;
 int irq_cnt = 0, do_irq = 1, fault_cnt = 0;
 uint64_t *pte_encl = NULL;
 uint64_t *pte_str_encl = NULL;
-uint64_t *pmd_encl = NULL;
 
 uint8_t *do_cnt_instr; // shared variable. If this is 1 we start measuring
 uint8_t do_cnt_instr_old = 0;
@@ -124,7 +123,6 @@ uint64_t aep_cb_func(void)
         * to filter out "zero-step" results that won't set the accessed bit.
         */
         *pte_encl = MARK_NOT_ACCESSED(*pte_encl);
-        //*pmd_encl = MARK_NOT_ACCESSED(*pmd_encl);
 
         __asm__ __volatile__(
             "prefetcht0 sgx_step_aep_trampoline(%%rip)\n\t"
@@ -140,8 +138,8 @@ uint64_t aep_cb_func(void)
             :::
         );
 
+        // The value returned by this function will be set as the APIC counter
         return SGX_STEP_TIMER_INTERVAL;
-        //apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
     }
     return 0;
 }
@@ -216,7 +214,6 @@ void attacker_config_page_table(void)
 #endif
 
     //print_page_table( get_enclave_base() );
-    ASSERT(pmd_encl = remap_page_table_level(get_enclave_base(), PMD));
 }
 
 /* ================== ATTACKER MAIN ================= */
