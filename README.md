@@ -25,7 +25,7 @@ The paper and the attack are based upon initial observations made during Miro Ha
 
   - Please follow the installation instructions in the [sgx-step/README.md](sgx-step/README.md) to install SGXStep.
   
-    To do that: run the two scripts: `install_SGX_driver.sh` and `install_SGX_SDK.sh`.
+    In short, to do that run the two scripts `install_SGX_driver.sh` and `install_SGX_SDK.sh`.
   Make sure to source the SGXSDK environment file after that.
 
   - The following boot kernel parameters must be specified:
@@ -47,7 +47,7 @@ The paper and the attack are based upon initial observations made during Miro Ha
 
 ## Configuration
 
-There are several parameters that can be tweaked in [frontal/Makefile.config](app/frontal/Makefile.config). The most important one is the `SGX_STEP_TIMER_INTERVAL` value that sets up the APIC counter for sgx-step. A suitable value will make sure that the script runs without errors. This value is platform specific see also [sgx-step/README.md](sgx-step/README.md). Note that for the frontal attack we use the a APIC division of 1. Hence, as a rule of thumb the values for the stock SGX-Step need to be roughly doubled to work with our changes.
+There are several parameters that can be tweaked in [frontal/Makefile.config](frontal/Makefile.config). The most important one is the `SGX_STEP_TIMER_INTERVAL` value that sets up the APIC counter for sgx-step. A suitable value will make sure that the script runs without errors. This value is platform specific see also [sgx-step/README.md](sgx-step/README.md). Note that for the frontal attack we use the a APIC division of 1. Hence, as a rule of thumb the values for the stock SGX-Step need to be roughly doubled to work with our changes.
 
 Troubleshooting: 
   - Too high values will produce an error similar to the following: 
@@ -56,16 +56,16 @@ Troubleshooting:
     ```
   - Too low values will either produce a `segmentation fault` or will cause the program to wait indefinately. Try first to re-load the kernel module and relaunching the app in these cases, and if the errors keep happening increase the value of `SGX_STEP_TIMER_INTERVAL`.
 
-There are several other parameters that can be played with in [app/frontal/Makefile.config](app/frontal/Makefile.config). But the default ones should clearly show a high attack success probability.
+There are several other parameters that can be played with in [frontal/Makefile.config](frontal/Makefile.config). But the default ones should clearly show a high attack success probability.
 
 **Important:** If you get a log with several of the following messages:
 `[main.c] Caught fault 11! Restoring enclave page permissions.` Please make sure that CPU `CR4.UMIP` bit is unset. This is necessary for the code to run properly.
 
 ## Running the Attack
 
-Follow these few steps to run the PoC for the Frontal attack.
+Follow these few steps to run the PoC for the Frontal attack. This PoC executes two identical branches containing only `mov` and `test` instructions after each other. A secret value decides which path is taken at each iteration. The attacker then sees a list of timings and based on those tries to detect which of the two identical branches is executed. The number of instructions in the branches can be configured as well as their initial alignments.
 
-1. Go to the frontal poc: `cd app/frontal`
+1. Go to the frontal poc: `cd frontal`
 2. Make sure that the variable `ATTACK_SCENARIO` in [Makefile.config](Makefile.config) is set to `MICROBENCH` to run this PoC.
 3. The command `make plot` runs the tests, plots the results and calculates the attack success probability
     - Plots are saved in the plot folder. Note that if the peaks for the two branches are not overlapping the CPU is vulnerable
@@ -77,6 +77,10 @@ Follow these few steps to run the PoC for the Frontal attack.
         Any hit rate above 55% percent indicates that the CPU is clearly vulnerable.
 
 The `MICROBENCH` scenario is set up with two blanaced branches that contain many `test` and `mov` instructions. The alignment of the branches can be changes with the `ALIGN1` and `ALIGN2` variables in [Makefile.config](Makefile.config). 
+
+An plot from a test run with the default parameters is given below, showing the timing distributions of the same instruction, but groupped with the branch at which they belong to.
+
+![microbench-plot](frontal/plots/scenario_microbench_example_plot.png)
 
 ## Running the attack on a mock of the IPP library v2.9
 
@@ -97,8 +101,8 @@ There are two ways to make the code not exploitable.
 
 Follow these few steps to run the PoC for the Frontal attack against a mock of the IPP library.
 
-1. Go to the frontal poc: `cd app/frontal`
-2. Make sure that the variable `ATTACK_SCENARIO` in [Makefile.config](Makefile.config) is set to `IPP_LIB` to run this PoC.
+1. Go to the frontal folder: `cd frontal`
+2. Make sure that the variable `ATTACK_SCENARIO` in [frontal/Makefile.config](frontal/Makefile.config) is set to `IPP_LIB` to run this PoC.
 3. The command `make plot` runs the tests, plots the results
     - Plots are saved in the plot folder. Note that if the peaks for the two branches are not overlapping the CPU is vulnerable
     - The script prints the average time it took to execute each path. Whenever these averages differ significantly the attacker can distinguish between them.
@@ -129,8 +133,11 @@ Follow these few steps to run the PoC for the Frontal attack against a mock of t
 
 A plot is produced in the path given in the last line of the output of the command. As said above, the plot depicts the distributions of the `mov %ecx, (%edx)` in the three different secret dependent paths. If these distributions are not overlapping, the IPP library is exploitable. Note that the output of `make plot` also reports whether the version is exploitable.
 
-We use a two different code snippets to mock the `l9_ippsCmp_BN` function. The first is [app/frontal/Enclave/asm_ipp_mock_sync.S](app/frontal/Enclave/asm_ipp_mock_sync.S). It contains the original library code with instructions after it to simulate various attack capabilities. This test case is run when `ATTACKER_SYNC` is set to `1` in  [Makefile.config](Makefile.config).
-By setting the `ATTACKER_SYNC = 0` the [app/frontal/Enclave/asm_ipp_mock.S](app/frontal/Enclave/asm_ipp_mock.S) assembly file is used instead for the attack. This file contains a mock of the `l9_ippsCmp_BN` without any instructions after it. We describe the exact differences between these two test cases below.
+We use a two different code snippets to mock the `l9_ippsCmp_BN` function. The first is [frontal/Enclave/asm_ipp_mock_sync.S](frontal/Enclave/asm_ipp_mock_sync.S). It contains the original library code with instructions after it to simulate various attack capabilities. This test case is run when `ATTACKER_SYNC` is set to `1` in  [frontal/Makefile.config](frontal/Makefile.config).
+By setting the `ATTACKER_SYNC = 0` the [frontal/Enclave/asm_ipp_mock.S](frontal/Enclave/asm_ipp_mock.S) assembly file is used instead for the attack. This file contains a mock of the `l9_ippsCmp_BN` without any instructions after it. We describe the exact differences between these two test cases below.
+
+A plot from a sample run with `ATTACKER_SYNC = 1` is given below. It plots the distributions of the same instruciton (`mov` to memory), groupped by the path they belong to. The only difference between these instructions is their alignment. Note that each branch only contains 1 `mov` in it.
+![ipp-plot](frontal/plots/scenario_ipp_lib_example_plot.png)
 
 ### **Clarifications about the ATTACKER_SYNC parameter**
 By running the exact copy of the new version of the IPP library (by setting `ATTACKER_SYNC = 0`), you will notice that the current version does not seem vulnerable to the frontal attack. Of course, the function itself is still vulnerable because we can count the number of instructions and, by that, correctly estimate the path taken. Besides the instruction number, the order of the instructions in the equal path is also different compared to the other paths (the xor gets executed after the mov). Hence, the equal path can also be distinguished by observing the execution timing of a particular (unknown) instruction. However, if the branches would have the same number and type of instructions in them (and in the same order), the frontal attack cannot distinguish between the alignment of the `movs` currently used in the `l9_ippsCmp_BN` function. With `ATTACKER_SYNC = 1`, we want to highlight a small change that makes it vulnerable again, by keeping the same alignment. In the test run with `ATTACKER_SYNC=1`, we add several `movs` before the final return is performed. We do not change any of the branches themselves, only the instructions executed after them right before the return instruction.
@@ -140,4 +147,4 @@ First, an attacker can leverage hyperthreading to inject these instructions in t
 
 ## Precomputed plots
 
-There are a couple o examples of the outputs of the Frontal attack PoC in the [app/frontal/plots](app/frontal/plots) folder.
+There are a couple o examples of the outputs of the Frontal attack PoC in the [frontal/plots](frontal/plots) folder.
