@@ -1,0 +1,529 @@
+## This file contains all the skylake events that can be set in the Makefile.config file
+
+##### LD_BLOCKS
+#  EVENTS += "LD_BLOCKS.STORE_FORWARD-event=0x3,umask=0x2"
+#  EVENTS += "LD_BLOCKS.NO_SR-event=0x3,umask=0x8"
+
+
+##### LD_BLOCKS_PARTIAL
+#  EVENTS += "LD_BLOCKS_PARTIAL.ADDRESS_ALIAS-event=0x7,umask=0x1"
+
+
+##### DTLB_LOAD_MISSES
+#  EVENTS += "DTLB_LOAD_MISSES.MISS_CAUSES_A_WALK-event=0x8,umask=0x1"
+#  EVENTS += "DTLB_LOAD_MISSES.WALK_COMPLETED_4K-event=0x8,umask=0x2"
+#  EVENTS += "DTLB_LOAD_MISSES.WALK_COMPLETED_2M_4M-event=0x8,umask=0x4"
+#  EVENTS += "DTLB_LOAD_MISSES.WALK_COMPLETED_1G-event=0x8,umask=0x8"
+#  EVENTS += "DTLB_LOAD_MISSES.WALK_COMPLETED-event=0x8,umask=0xe"
+#  EVENTS += "DTLB_LOAD_MISSES.WALK_PENDING-event=0x8,umask=0x10"
+#  EVENTS += "DTLB_LOAD_MISSES.WALK_ACTIVE-event=0x8,umask=0x10,cmask=0x1"
+#  EVENTS += "DTLB_LOAD_MISSES.STLB_HIT-event=0x8,umask=0x20"
+
+
+##### INT_MISC
+#  EVENTS += "INT_MISC.RECOVERY_CYCLES-event=0xd,umask=0x1"
+#  EVENTS += "INT_MISC.RECOVERY_CYCLES_ANY-event=0xd,umask=0x1,any=0x1"
+#  EVENTS += "INT_MISC.CLEAR_RESTEER_CYCLES-event=0xd,umask=0x80"
+
+
+##### UOPS_ISSUED
+#  EVENTS += "UOPS_ISSUED.ANY-event=0xe,umask=0x1"
+#  EVENTS += "UOPS_ISSUED.STALL_CYCLES-event=0xe,umask=0x1,inv=0x1,cmask=0x1"
+#  EVENTS += "UOPS_ISSUED.VECTOR_WIDTH_MISMATCH-event=0xe,umask=0x2"
+#  EVENTS += "UOPS_ISSUED.SLOW_LEA-event=0xe,umask=0x20"
+
+
+##### ARITH
+#  EVENTS += "ARITH.DIVIDER_ACTIVE-event=0x14,umask=0x1,cmask=0x1"
+
+
+##### L2_RQSTS
+#  EVENTS += "L2_RQSTS.DEMAND_DATA_RD_MISS-event=0x24,umask=0x21"
+#  EVENTS += "L2_RQSTS.RFO_MISS-event=0x24,umask=0x22"
+#  EVENTS += "L2_RQSTS.CODE_RD_MISS-event=0x24,umask=0x24"
+#  EVENTS += "L2_RQSTS.ALL_DEMAND_MISS-event=0x24,umask=0x27"
+#  EVENTS += "L2_RQSTS.PF_MISS-event=0x24,umask=0x38"
+#  EVENTS += "L2_RQSTS.MISS-event=0x24,umask=0x3f"
+#  EVENTS += "L2_RQSTS.DEMAND_DATA_RD_HIT-event=0x24,umask=0x41"
+#  EVENTS += "L2_RQSTS.RFO_HIT-event=0x24,umask=0x42"
+#  EVENTS += "L2_RQSTS.CODE_RD_HIT-event=0x24,umask=0x44"
+#  EVENTS += "L2_RQSTS.PF_HIT-event=0x24,umask=0xd8"
+#  EVENTS += "L2_RQSTS.ALL_DEMAND_DATA_RD-event=0x24,umask=0xe1"
+#  EVENTS += "L2_RQSTS.ALL_RFO-event=0x24,umask=0xe2"
+#  EVENTS += "L2_RQSTS.ALL_CODE_RD-event=0x24,umask=0xe4"
+#  EVENTS += "L2_RQSTS.ALL_DEMAND_REFERENCES-event=0x24,umask=0xe7"
+#  EVENTS += "L2_RQSTS.ALL_PF-event=0x24,umask=0xf8"
+#  EVENTS += "L2_RQSTS.REFERENCES-event=0x24,umask=0xff"
+
+
+##### LONGEST_LAT_CACHE
+   ## ADDITIONAL INFO: Architectural
+#  EVENTS += "LONGEST_LAT_CACHE.MISS-event=0x2e,umask=0x41"
+   ## ADDITIONAL INFO: Architectural
+#  EVENTS += "LONGEST_LAT_CACHE.REFERENCE-event=0x2e,umask=0x4f"
+
+
+##### SW_PREFETCH_ACCESS
+#  EVENTS += "SW_PREFETCH_ACCESS.NTA-event=0x32,umask=0x1"
+#  EVENTS += "SW_PREFETCH_ACCESS.T0-event=0x32,umask=0x2"
+#  EVENTS += "SW_PREFETCH_ACCESS.T1_T2-event=0x32,umask=0x4"
+#  EVENTS += "SW_PREFETCH_ACCESS.PREFETCHW-event=0x32,umask=0x8"
+
+
+##### CPU_CLK_UNHALTED
+   ## ADDITIONAL INFO: Architectural
+#  EVENTS += "CPU_CLK_UNHALTED.THREAD_P-event=0x3c,umask=0x0"
+   ## ADDITIONAL INFO: Architectural
+#  EVENTS += "CPU_CLK_UNHALTED.THREAD_P_ANY-event=0x3c,umask=0x0,any=0x1"
+   ## ADDITIONAL INFO: Architectural
+#  EVENTS += "CPU_CLK_UNHALTED.RING0_TRANS-event=0x3c,umask=0x0,usr=0x0,os=0x1,edge,cmask=0x1"
+
+
+##### CPU_CLK_THREAD_UNHALTED
+   ## ADDITIONAL INFO: Architectural
+#  EVENTS += "CPU_CLK_THREAD_UNHALTED.REF_XCLK-event=0x3c,umask=0x1"
+   ## ADDITIONAL INFO: Architectural
+#  EVENTS += "CPU_CLK_THREAD_UNHALTED.REF_XCLK_ANY-event=0x3c,umask=0x1,any=0x1"
+
+
+##### CPU_CLK_UNHALTED
+   ## ADDITIONAL INFO: Architectural
+#  EVENTS += "CPU_CLK_UNHALTED.REF_XCLK-event=0x3c,umask=0x1"
+   ## ADDITIONAL INFO: Architectural
+#  EVENTS += "CPU_CLK_UNHALTED.REF_XCLK_ANY-event=0x3c,umask=0x1,any=0x1"
+
+
+##### CPU_CLK_THREAD_UNHALTED
+#  EVENTS += "CPU_CLK_THREAD_UNHALTED.ONE_THREAD_ACTIVE-event=0x3c,umask=0x2"
+
+
+##### CPU_CLK_UNHALTED
+#  EVENTS += "CPU_CLK_UNHALTED.ONE_THREAD_ACTIVE-event=0x3c,umask=0x2"
+
+
+##### L1D_PEND_MISS
+#  EVENTS += "L1D_PEND_MISS.PENDING-event=0x48,umask=0x1"
+#  EVENTS += "L1D_PEND_MISS.PENDING_CYCLES-event=0x48,umask=0x1,cmask=0x1"
+#  EVENTS += "L1D_PEND_MISS.PENDING_CYCLES_ANY-event=0x48,umask=0x1,any=0x1,cmask=0x1"
+#  EVENTS += "L1D_PEND_MISS.FB_FULL-event=0x48,umask=0x2"
+
+
+##### DTLB_STORE_MISSES
+#  EVENTS += "DTLB_STORE_MISSES.MISS_CAUSES_A_WALK-event=0x49,umask=0x1"
+#  EVENTS += "DTLB_STORE_MISSES.WALK_COMPLETED_4K-event=0x49,umask=0x2"
+#  EVENTS += "DTLB_STORE_MISSES.WALK_COMPLETED_2M_4M-event=0x49,umask=0x4"
+#  EVENTS += "DTLB_STORE_MISSES.WALK_COMPLETED_1G-event=0x49,umask=0x8"
+#  EVENTS += "DTLB_STORE_MISSES.WALK_COMPLETED-event=0x49,umask=0xe"
+#  EVENTS += "DTLB_STORE_MISSES.WALK_PENDING-event=0x49,umask=0x10"
+#  EVENTS += "DTLB_STORE_MISSES.WALK_ACTIVE-event=0x49,umask=0x10,cmask=0x1"
+#  EVENTS += "DTLB_STORE_MISSES.STLB_HIT-event=0x49,umask=0x20"
+
+
+##### LOAD_HIT_PRE
+#  EVENTS += "LOAD_HIT_PRE.SW_PF-event=0x4c,umask=0x1"
+
+
+##### EPT
+#  EVENTS += "EPT.WALK_PENDING-event=0x4f,umask=0x10"
+
+
+##### L1D
+#  EVENTS += "L1D.REPLACEMENT-event=0x51,umask=0x1"
+
+
+##### TX_MEM
+#  EVENTS += "TX_MEM.ABORT_CONFLICT-event=0x54,umask=0x1"
+#  EVENTS += "TX_MEM.ABORT_CAPACITY-event=0x54,umask=0x2"
+#  EVENTS += "TX_MEM.ABORT_HLE_STORE_TO_ELIDED_LOCK-event=0x54,umask=0x4"
+#  EVENTS += "TX_MEM.ABORT_HLE_ELISION_BUFFER_NOT_EMPTY-event=0x54,umask=0x8"
+#  EVENTS += "TX_MEM.ABORT_HLE_ELISION_BUFFER_MISMATCH-event=0x54,umask=0x10"
+#  EVENTS += "TX_MEM.ABORT_HLE_ELISION_BUFFER_UNSUPPORTED_ALIGNMENT-event=0x54,umask=0x20"
+#  EVENTS += "TX_MEM.HLE_ELISION_BUFFER_FULL-event=0x54,umask=0x40"
+
+
+##### TX_EXEC
+#  EVENTS += "TX_EXEC.MISC1-event=0x5d,umask=0x1"
+#  EVENTS += "TX_EXEC.MISC2-event=0x5d,umask=0x2"
+#  EVENTS += "TX_EXEC.MISC3-event=0x5d,umask=0x4"
+#  EVENTS += "TX_EXEC.MISC4-event=0x5d,umask=0x8"
+#  EVENTS += "TX_EXEC.MISC5-event=0x5d,umask=0x10"
+
+
+##### RS_EVENTS
+#  EVENTS += "RS_EVENTS.EMPTY_CYCLES-event=0x5e,umask=0x1"
+#  EVENTS += "RS_EVENTS.EMPTY_END-event=0x5e,umask=0x1,edge,inv=0x1,cmask=0x1"
+
+
+##### OFFCORE_REQUESTS_OUTSTANDING
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.DEMAND_DATA_RD-event=0x60,umask=0x1"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.CYCLES_WITH_DEMAND_DATA_RD-event=0x60,umask=0x1,cmask=0x1"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.DEMAND_DATA_RD_GE_6-event=0x60,umask=0x1,cmask=0x6"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.DEMAND_CODE_RD-event=0x60,umask=0x2"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.CYCLES_WITH_DEMAND_CODE_RD-event=0x60,umask=0x2,cmask=0x1"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.DEMAND_RFO-event=0x60,umask=0x4"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.CYCLES_WITH_DEMAND_RFO-event=0x60,umask=0x4,cmask=0x1"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.ALL_DATA_RD-event=0x60,umask=0x8"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.CYCLES_WITH_DATA_RD-event=0x60,umask=0x8,cmask=0x1"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.L3_MISS_DEMAND_DATA_RD-event=0x60,umask=0x10"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.CYCLES_WITH_L3_MISS_DEMAND_DATA_RD-event=0x60,umask=0x10,cmask=0x1"
+#  EVENTS += "OFFCORE_REQUESTS_OUTSTANDING.L3_MISS_DEMAND_DATA_RD_GE_6-event=0x60,umask=0x10,cmask=0x6"
+
+
+##### IDQ
+#  EVENTS += "IDQ.MITE_UOPS-event=0x79,umask=0x4"
+#  EVENTS += "IDQ.MITE_CYCLES-event=0x79,umask=0x4,cmask=0x1"
+#  EVENTS += "IDQ.DSB_UOPS-event=0x79,umask=0x8"
+#  EVENTS += "IDQ.DSB_CYCLES-event=0x79,umask=0x8,cmask=0x1"
+#  EVENTS += "IDQ.MS_DSB_CYCLES-event=0x79,umask=0x10,cmask=0x1"
+#  EVENTS += "IDQ.ALL_DSB_CYCLES_4_UOPS-event=0x79,umask=0x18,cmask=0x4"
+#  EVENTS += "IDQ.ALL_DSB_CYCLES_ANY_UOPS-event=0x79,umask=0x18,cmask=0x1"
+#  EVENTS += "IDQ.MS_MITE_UOPS-event=0x79,umask=0x20"
+#  EVENTS += "IDQ.ALL_MITE_CYCLES_4_UOPS-event=0x79,umask=0x24,cmask=0x4"
+#  EVENTS += "IDQ.ALL_MITE_CYCLES_ANY_UOPS-event=0x79,umask=0x24,cmask=0x1"
+#  EVENTS += "IDQ.MS_CYCLES-event=0x79,umask=0x30,cmask=0x1"
+#  EVENTS += "IDQ.MS_SWITCHES-event=0x79,umask=0x30,edge,cmask=0x1"
+#  EVENTS += "IDQ.MS_UOPS-event=0x79,umask=0x30"
+
+
+##### ICACHE_16B
+#  EVENTS += "ICACHE_16B.IFDATA_STALL-event=0x80,umask=0x4"
+
+
+##### ICACHE_64B
+#  EVENTS += "ICACHE_64B.IFTAG_HIT-event=0x83,umask=0x1"
+#  EVENTS += "ICACHE_64B.IFTAG_MISS-event=0x83,umask=0x2"
+#  EVENTS += "ICACHE_64B.IFTAG_STALL-event=0x83,umask=0x4"
+
+
+##### ITLB_MISSES
+#  EVENTS += "ITLB_MISSES.MISS_CAUSES_A_WALK-event=0x85,umask=0x1"
+#  EVENTS += "ITLB_MISSES.WALK_COMPLETED_4K-event=0x85,umask=0x2"
+#  EVENTS += "ITLB_MISSES.WALK_COMPLETED_2M_4M-event=0x85,umask=0x4"
+#  EVENTS += "ITLB_MISSES.WALK_COMPLETED_1G-event=0x85,umask=0x8"
+#  EVENTS += "ITLB_MISSES.WALK_COMPLETED-event=0x85,umask=0xe"
+#  EVENTS += "ITLB_MISSES.WALK_PENDING-event=0x85,umask=0x10"
+#  EVENTS += "ITLB_MISSES.WALK_ACTIVE-event=0x85,umask=0x10,cmask=0x1"
+#  EVENTS += "ITLB_MISSES.STLB_HIT-event=0x85,umask=0x20"
+
+
+##### ILD_STALL
+#  EVENTS += "ILD_STALL.LCP-event=0x87,umask=0x1"
+
+
+##### IDQ_UOPS_NOT_DELIVERED
+#  EVENTS += "IDQ_UOPS_NOT_DELIVERED.CORE-event=0x9c,umask=0x1"
+#  EVENTS += "IDQ_UOPS_NOT_DELIVERED.CYCLES_0_UOPS_DELIV.CORE-event=0x9c,umask=0x1,cmask=0x4"
+#  EVENTS += "IDQ_UOPS_NOT_DELIVERED.CYCLES_LE_1_UOP_DELIV.CORE-event=0x9c,umask=0x1,cmask=0x3"
+#  EVENTS += "IDQ_UOPS_NOT_DELIVERED.CYCLES_LE_2_UOP_DELIV.CORE-event=0x9c,umask=0x1,cmask=0x2"
+#  EVENTS += "IDQ_UOPS_NOT_DELIVERED.CYCLES_LE_3_UOP_DELIV.CORE-event=0x9c,umask=0x1,cmask=0x1"
+#  EVENTS += "IDQ_UOPS_NOT_DELIVERED.CYCLES_FE_WAS_OK-event=0x9c,umask=0x1,inv=0x1,cmask=0x1"
+
+
+##### UOPS_DISPATCHED_PORT
+#  EVENTS += "UOPS_DISPATCHED_PORT.PORT_0-event=0xa1,umask=0x1"
+#  EVENTS += "UOPS_DISPATCHED_PORT.PORT_1-event=0xa1,umask=0x2"
+#  EVENTS += "UOPS_DISPATCHED_PORT.PORT_2-event=0xa1,umask=0x4"
+#  EVENTS += "UOPS_DISPATCHED_PORT.PORT_3-event=0xa1,umask=0x8"
+#  EVENTS += "UOPS_DISPATCHED_PORT.PORT_4-event=0xa1,umask=0x10"
+#  EVENTS += "UOPS_DISPATCHED_PORT.PORT_5-event=0xa1,umask=0x20"
+#  EVENTS += "UOPS_DISPATCHED_PORT.PORT_6-event=0xa1,umask=0x40"
+#  EVENTS += "UOPS_DISPATCHED_PORT.PORT_7-event=0xa1,umask=0x80"
+
+
+##### RESOURCE_STALLS
+#  EVENTS += "RESOURCE_STALLS.ANY-event=0xa2,umask=0x1"
+#  EVENTS += "RESOURCE_STALLS.SB-event=0xa2,umask=0x8"
+
+
+##### CYCLE_ACTIVITY
+#  EVENTS += "CYCLE_ACTIVITY.CYCLES_L2_MISS-event=0xa3,umask=0x1,cmask=0x1"
+#  EVENTS += "CYCLE_ACTIVITY.CYCLES_L3_MISS-event=0xa3,umask=0x2,cmask=0x2"
+#  EVENTS += "CYCLE_ACTIVITY.STALLS_TOTAL-event=0xa3,umask=0x4,cmask=0x4"
+#  EVENTS += "CYCLE_ACTIVITY.STALLS_L2_MISS-event=0xa3,umask=0x5,cmask=0x5"
+#  EVENTS += "CYCLE_ACTIVITY.STALLS_L3_MISS-event=0xa3,umask=0x6,cmask=0x6"
+#  EVENTS += "CYCLE_ACTIVITY.CYCLES_L1D_MISS-event=0xa3,umask=0x8,cmask=0x8"
+#  EVENTS += "CYCLE_ACTIVITY.STALLS_L1D_MISS-event=0xa3,umask=0xc,cmask=0x12"
+#  EVENTS += "CYCLE_ACTIVITY.CYCLES_MEM_ANY-event=0xa3,umask=0x10,cmask=0x16"
+#  EVENTS += "CYCLE_ACTIVITY.STALLS_MEM_ANY-event=0xa3,umask=0x14,cmask=0x20"
+
+
+##### EXE_ACTIVITY
+#  EVENTS += "EXE_ACTIVITY.EXE_BOUND_0_PORTS-event=0xa6,umask=0x1"
+#  EVENTS += "EXE_ACTIVITY.1_PORTS_UTIL-event=0xa6,umask=0x2"
+#  EVENTS += "EXE_ACTIVITY.2_PORTS_UTIL-event=0xa6,umask=0x4"
+#  EVENTS += "EXE_ACTIVITY.3_PORTS_UTIL-event=0xa6,umask=0x8"
+#  EVENTS += "EXE_ACTIVITY.4_PORTS_UTIL-event=0xa6,umask=0x10"
+#  EVENTS += "EXE_ACTIVITY.BOUND_ON_STORES-event=0xa6,umask=0x40"
+
+
+##### LSD
+#  EVENTS += "LSD.UOPS-event=0xa8,umask=0x1"
+#  EVENTS += "LSD.CYCLES_ACTIVE-event=0xa8,umask=0x1,cmask=0x1"
+#  EVENTS += "LSD.CYCLES_4_UOPS-event=0xa8,umask=0x1,cmask=0x4"
+
+
+##### DSB2MITE_SWITCHES
+#  EVENTS += "DSB2MITE_SWITCHES.PENALTY_CYCLES-event=0xab,umask=0x2"
+
+
+##### ITLB
+#  EVENTS += "ITLB.ITLB_FLUSH-event=0xae,umask=0x1"
+
+
+##### OFFCORE_REQUESTS
+#  EVENTS += "OFFCORE_REQUESTS.DEMAND_DATA_RD-event=0xb0,umask=0x1"
+#  EVENTS += "OFFCORE_REQUESTS.DEMAND_CODE_RD-event=0xb0,umask=0x2"
+#  EVENTS += "OFFCORE_REQUESTS.DEMAND_RFO-event=0xb0,umask=0x4"
+#  EVENTS += "OFFCORE_REQUESTS.ALL_DATA_RD-event=0xb0,umask=0x8"
+#  EVENTS += "OFFCORE_REQUESTS.L3_MISS_DEMAND_DATA_RD-event=0xb0,umask=0x10"
+#  EVENTS += "OFFCORE_REQUESTS.ALL_REQUESTS-event=0xb0,umask=0x80"
+
+
+##### UOPS_EXECUTED
+#  EVENTS += "UOPS_EXECUTED.THREAD-event=0xb1,umask=0x1"
+#  EVENTS += "UOPS_EXECUTED.STALL_CYCLES-event=0xb1,umask=0x1,inv=0x1,cmask=0x1"
+#  EVENTS += "UOPS_EXECUTED.CYCLES_GE_1_UOP_EXEC-event=0xb1,umask=0x1,cmask=0x1"
+#  EVENTS += "UOPS_EXECUTED.CYCLES_GE_2_UOPS_EXEC-event=0xb1,umask=0x1,cmask=0x2"
+#  EVENTS += "UOPS_EXECUTED.CYCLES_GE_3_UOPS_EXEC-event=0xb1,umask=0x1,cmask=0x3"
+#  EVENTS += "UOPS_EXECUTED.CYCLES_GE_4_UOPS_EXEC-event=0xb1,umask=0x1,cmask=0x4"
+#  EVENTS += "UOPS_EXECUTED.CORE-event=0xb1,umask=0x2"
+#  EVENTS += "UOPS_EXECUTED.CORE_CYCLES_GE_1-event=0xb1,umask=0x2,cmask=0x1"
+#  EVENTS += "UOPS_EXECUTED.CORE_CYCLES_GE_2-event=0xb1,umask=0x2,cmask=0x2"
+#  EVENTS += "UOPS_EXECUTED.CORE_CYCLES_GE_3-event=0xb1,umask=0x2,cmask=0x3"
+#  EVENTS += "UOPS_EXECUTED.CORE_CYCLES_GE_4-event=0xb1,umask=0x2,cmask=0x4"
+#  EVENTS += "UOPS_EXECUTED.CORE_CYCLES_NONE-event=0xb1,umask=0x2,inv=0x1,cmask=0x1"
+#  EVENTS += "UOPS_EXECUTED.X87-event=0xb1,umask=0x10"
+
+
+##### OFFCORE_REQUESTS_BUFFER
+#  EVENTS += "OFFCORE_REQUESTS_BUFFER.SQ_FULL-event=0xb2,umask=0x1"
+
+
+##### TLB_FLUSH
+#  EVENTS += "TLB_FLUSH.DTLB_THREAD-event=0xbd,umask=0x1"
+#  EVENTS += "TLB_FLUSH.STLB_ANY-event=0xbd,umask=0x20"
+
+
+##### INST_RETIRED
+   ## ADDITIONAL INFO: Architectural
+#  EVENTS += "INST_RETIRED.ANY_P-event=0xc0,umask=0x0"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "INST_RETIRED.PREC_DIST-event=0xc0,umask=0x1"
+
+
+##### OTHER_ASSISTS
+#  EVENTS += "OTHER_ASSISTS.ANY-event=0xc1,umask=0x3f"
+
+
+##### UOPS_RETIRED
+#  EVENTS += "UOPS_RETIRED.RETIRE_SLOTS-event=0xc2,umask=0x2"
+#  EVENTS += "UOPS_RETIRED.STALL_CYCLES-event=0xc2,umask=0x2,inv=0x1,cmask=0x1"
+#  EVENTS += "UOPS_RETIRED.TOTAL_CYCLES-event=0xc2,umask=0x2,inv=0x1,cmask=0x10"
+
+
+##### MACHINE_CLEARS
+#  EVENTS += "MACHINE_CLEARS.COUNT-event=0xc3,umask=0x1,edge,cmask=0x1"
+#  EVENTS += "MACHINE_CLEARS.MEMORY_ORDERING-event=0xc3,umask=0x2"
+#  EVENTS += "MACHINE_CLEARS.SMC-event=0xc3,umask=0x4"
+
+
+##### BR_INST_RETIRED
+   ## ADDITIONAL INFO: Architectural,Precise
+#  EVENTS += "BR_INST_RETIRED.ALL_BRANCHES-event=0xc4,umask=0x0"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "BR_INST_RETIRED.CONDITIONAL-event=0xc4,umask=0x1"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "BR_INST_RETIRED.NEAR_CALL-event=0xc4,umask=0x2"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "BR_INST_RETIRED.NEAR_RETURN-event=0xc4,umask=0x8"
+#  EVENTS += "BR_INST_RETIRED.NOT_TAKEN-event=0xc4,umask=0x10"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "BR_INST_RETIRED.NEAR_TAKEN-event=0xc4,umask=0x20"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "BR_INST_RETIRED.FAR_BRANCH-event=0xc4,umask=0x40"
+
+
+##### BR_MISP_RETIRED
+   ## ADDITIONAL INFO: Architectural,Precise
+#  EVENTS += "BR_MISP_RETIRED.ALL_BRANCHES-event=0xc5,umask=0x0"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "BR_MISP_RETIRED.CONDITIONAL-event=0xc5,umask=0x1"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "BR_MISP_RETIRED.NEAR_CALL-event=0xc5,umask=0x2"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "BR_MISP_RETIRED.NEAR_TAKEN-event=0xc5,umask=0x20"
+
+
+##### FRONTEND_RETIRED
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.DSB_MISS-event=0xc6,umask=0x1,msr_pebs_frontend=0x11"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.L1I_MISS-event=0xc6,umask=0x1,msr_pebs_frontend=0x12"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.L2_MISS-event=0xc6,umask=0x1,msr_pebs_frontend=0x13"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.ITLB_MISS-event=0xc6,umask=0x1,msr_pebs_frontend=0x14"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.STLB_MISS-event=0xc6,umask=0x1,msr_pebs_frontend=0x15"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.IDQ_READ_BUBBLES-event=0xc6,umask=0x1,msr_pebs_frontend=0x6"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_2-event=0xc6,umask=0x1,msr_pebs_frontend=0x400206"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_2_BUBBLES_GE_2-event=0xc6,umask=0x1,msr_pebs_frontend=0x200206"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_4-event=0xc6,umask=0x1,msr_pebs_frontend=0x400406"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_8-event=0xc6,umask=0x1,msr_pebs_frontend=0x400806"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_16-event=0xc6,umask=0x1,msr_pebs_frontend=0x401006"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_32-event=0xc6,umask=0x1,msr_pebs_frontend=0x402006"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_64-event=0xc6,umask=0x1,msr_pebs_frontend=0x404006"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_128-event=0xc6,umask=0x1,msr_pebs_frontend=0x408006"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_256-event=0xc6,umask=0x1,msr_pebs_frontend=0x410006"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_512-event=0xc6,umask=0x1,msr_pebs_frontend=0x420006"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_2_BUBBLES_GE_1-event=0xc6,umask=0x1,msr_pebs_frontend=0x100206"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "FRONTEND_RETIRED.LATENCY_GE_2_BUBBLES_GE_3-event=0xc6,umask=0x1,msr_pebs_frontend=0x300206"
+
+
+##### FP_ARITH_INST_RETIRED
+#  EVENTS += "FP_ARITH_INST_RETIRED.SCALAR_DOUBLE-event=0xc7,umask=0x1"
+#  EVENTS += "FP_ARITH_INST_RETIRED.SCALAR_SINGLE-event=0xc7,umask=0x2"
+#  EVENTS += "FP_ARITH_INST_RETIRED.128B_PACKED_DOUBLE-event=0xc7,umask=0x4"
+#  EVENTS += "FP_ARITH_INST_RETIRED.128B_PACKED_SINGLE-event=0xc7,umask=0x8"
+#  EVENTS += "FP_ARITH_INST_RETIRED.256B_PACKED_DOUBLE-event=0xc7,umask=0x10"
+#  EVENTS += "FP_ARITH_INST_RETIRED.256B_PACKED_SINGLE-event=0xc7,umask=0x20"
+
+
+##### HLE_RETIRED
+#  EVENTS += "HLE_RETIRED.START-event=0xc8,umask=0x1"
+#  EVENTS += "HLE_RETIRED.COMMIT-event=0xc8,umask=0x2"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "HLE_RETIRED.ABORTED-event=0xc8,umask=0x4"
+#  EVENTS += "HLE_RETIRED.ABORTED_MEM-event=0xc8,umask=0x8"
+#  EVENTS += "HLE_RETIRED.ABORTED_TIMER-event=0xc8,umask=0x10"
+#  EVENTS += "HLE_RETIRED.ABORTED_UNFRIENDLY-event=0xc8,umask=0x20"
+#  EVENTS += "HLE_RETIRED.ABORTED_MEMTYPE-event=0xc8,umask=0x40"
+#  EVENTS += "HLE_RETIRED.ABORTED_EVENTS-event=0xc8,umask=0x80"
+
+
+##### RTM_RETIRED
+#  EVENTS += "RTM_RETIRED.START-event=0xc9,umask=0x1"
+#  EVENTS += "RTM_RETIRED.COMMIT-event=0xc9,umask=0x2"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "RTM_RETIRED.ABORTED-event=0xc9,umask=0x4"
+#  EVENTS += "RTM_RETIRED.ABORTED_MEM-event=0xc9,umask=0x8"
+#  EVENTS += "RTM_RETIRED.ABORTED_TIMER-event=0xc9,umask=0x10"
+#  EVENTS += "RTM_RETIRED.ABORTED_UNFRIENDLY-event=0xc9,umask=0x20"
+#  EVENTS += "RTM_RETIRED.ABORTED_MEMTYPE-event=0xc9,umask=0x40"
+#  EVENTS += "RTM_RETIRED.ABORTED_EVENTS-event=0xc9,umask=0x80"
+
+
+##### FP_ASSIST
+#  EVENTS += "FP_ASSIST.ANY-event=0xca,umask=0x1e,cmask=0x1"
+
+
+##### HW_INTERRUPTS
+#  EVENTS += "HW_INTERRUPTS.RECEIVED-event=0xcb,umask=0x1"
+
+
+##### ROB_MISC_EVENTS
+#  EVENTS += "ROB_MISC_EVENTS.LBR_INSERTS-event=0xcc,umask=0x20"
+
+
+##### MEM_TRANS_RETIRED
+   ## ADDITIONAL INFO: Precise
+#  UNSUPPORTED_EVENTS += "MEM_TRANS_RETIRED.LOAD_LATENCY_GT_4-event=0xcd,umask=0x1,MSR_PEBS_LD_LAT_THRESHOLD=0x4"
+   ## ADDITIONAL INFO: Precise
+#  UNSUPPORTED_EVENTS += "MEM_TRANS_RETIRED.LOAD_LATENCY_GT_8-event=0xcd,umask=0x1,MSR_PEBS_LD_LAT_THRESHOLD=0x8"
+   ## ADDITIONAL INFO: Precise
+#  UNSUPPORTED_EVENTS += "MEM_TRANS_RETIRED.LOAD_LATENCY_GT_16-event=0xcd,umask=0x1,MSR_PEBS_LD_LAT_THRESHOLD=0x10"
+   ## ADDITIONAL INFO: Precise
+#  UNSUPPORTED_EVENTS += "MEM_TRANS_RETIRED.LOAD_LATENCY_GT_32-event=0xcd,umask=0x1,MSR_PEBS_LD_LAT_THRESHOLD=0x20"
+   ## ADDITIONAL INFO: Precise
+#  UNSUPPORTED_EVENTS += "MEM_TRANS_RETIRED.LOAD_LATENCY_GT_64-event=0xcd,umask=0x1,MSR_PEBS_LD_LAT_THRESHOLD=0x40"
+   ## ADDITIONAL INFO: Precise
+#  UNSUPPORTED_EVENTS += "MEM_TRANS_RETIRED.LOAD_LATENCY_GT_128-event=0xcd,umask=0x1,MSR_PEBS_LD_LAT_THRESHOLD=0x80"
+   ## ADDITIONAL INFO: Precise
+#  UNSUPPORTED_EVENTS += "MEM_TRANS_RETIRED.LOAD_LATENCY_GT_256-event=0xcd,umask=0x1,MSR_PEBS_LD_LAT_THRESHOLD=0x100"
+   ## ADDITIONAL INFO: Precise
+#  UNSUPPORTED_EVENTS += "MEM_TRANS_RETIRED.LOAD_LATENCY_GT_512-event=0xcd,umask=0x1,MSR_PEBS_LD_LAT_THRESHOLD=0x200"
+
+
+##### MEM_INST_RETIRED
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_INST_RETIRED.STLB_MISS_LOADS-event=0xd0,umask=0x11"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_INST_RETIRED.STLB_MISS_STORES-event=0xd0,umask=0x12"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_INST_RETIRED.LOCK_LOADS-event=0xd0,umask=0x21"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_INST_RETIRED.SPLIT_LOADS-event=0xd0,umask=0x41"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_INST_RETIRED.SPLIT_STORES-event=0xd0,umask=0x42"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_INST_RETIRED.ALL_LOADS-event=0xd0,umask=0x81"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_INST_RETIRED.ALL_STORES-event=0xd0,umask=0x82"
+
+
+##### MEM_LOAD_RETIRED
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_RETIRED.L1_HIT-event=0xd1,umask=0x1"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_RETIRED.L2_HIT-event=0xd1,umask=0x2"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_RETIRED.L3_HIT-event=0xd1,umask=0x4"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_RETIRED.L1_MISS-event=0xd1,umask=0x8"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_RETIRED.L2_MISS-event=0xd1,umask=0x10"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_RETIRED.L3_MISS-event=0xd1,umask=0x20"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_RETIRED.FB_HIT-event=0xd1,umask=0x40"
+
+
+##### MEM_LOAD_L3_HIT_RETIRED
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_L3_HIT_RETIRED.XSNP_MISS-event=0xd2,umask=0x1"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_L3_HIT_RETIRED.XSNP_HIT-event=0xd2,umask=0x2"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_L3_HIT_RETIRED.XSNP_HITM-event=0xd2,umask=0x4"
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_L3_HIT_RETIRED.XSNP_NONE-event=0xd2,umask=0x8"
+
+
+##### MEM_LOAD_MISC_RETIRED
+   ## ADDITIONAL INFO: Precise
+#  EVENTS += "MEM_LOAD_MISC_RETIRED.UC-event=0xd4,umask=0x4"
+
+
+##### BACLEARS
+#  EVENTS += "BACLEARS.ANY-event=0xe6,umask=0x1"
+
+
+##### L2_TRANS
+#  EVENTS += "L2_TRANS.L2_WB-event=0xf0,umask=0x40"
+
+
+##### L2_LINES_IN
+#  EVENTS += "L2_LINES_IN.ALL-event=0xf1,umask=0x1f"
+
+
+##### L2_LINES_OUT
+#  EVENTS += "L2_LINES_OUT.SILENT-event=0xf2,umask=0x1"
+#  EVENTS += "L2_LINES_OUT.NON_SILENT-event=0xf2,umask=0x2"
+#  EVENTS += "L2_LINES_OUT.USELESS_HWPF-event=0xf2,umask=0x4"
+
+
+##### SQ_MISC
+#  EVENTS += "SQ_MISC.SPLIT_LOCK-event=0xf4,umask=0x10"
