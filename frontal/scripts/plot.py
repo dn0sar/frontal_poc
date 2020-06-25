@@ -7,19 +7,22 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
-from colorama import Fore, Style
 from scipy.stats import norm
 from os.path import isfile
 
+from logger import Logger
+
 # Constant configuration variables
-FILTER_OUTLIERS = True
-STD_DEV_FACTOR  = 4
+FILTER_OUTLIERS         = True
+STD_DIST_FACTOR         = 4
+STD_DIST_FACTOR_EVENTS  = 4
 
 help_msgs = {
     "log_file":         "path to log file to parse",
     "--x_axis":         "set a fixed x axis (to make it easier to compare plots)",
     "--output_folder":  "path to folder for the produced plots",
-    "--no_gaussian":    "do not fit a gaussian distribution on the plots"
+    "--no_gaussian":    "do not fit a gaussian distribution on the plots",
+    "--verbose":        "print debug output",
 }
 parser = argparse.ArgumentParser()
 parser.add_argument("log_file", help=help_msgs["log_file"])
@@ -29,17 +32,23 @@ parser.add_argument("-o", "--output_folder", help=help_msgs["--output_folder"],
                     default="./plots")
 parser.add_argument("-g", "--no_gaussian", help=help_msgs["--no_gaussian"],
                     default=False, action="store_false")
+parser.add_argument("-v", "--verbose", help=help_msgs["--verbose"], action="store_true")
 
 args = parser.parse_args()
-
-print("-"*80 + "\n\tStart plotting\n" + "-"*80)
 
 data_file_path          = args.log_file
 data_file_path_parts    = data_file_path.rsplit('/', 1)
 data_file_name          = data_file_path_parts[-1]
 add_gaussian            = not args.no_gaussian
 plot_folder             = args.output_folder
+verbose                 = args.verbose
 plot_events             = False
+
+logger = Logger(parser.prog)
+if verbose:
+    logger.set_verbose()
+
+logger.title("Start plotting")
 
 if args.x_axis:
     x_axis      = args.x_axis
@@ -48,41 +57,16 @@ if args.x_axis:
     xvals       = np.linspace(x_axis[0], x_axis[1], 20 * x_range)
 
 # helper function
-def error(msg):
-    print(f"{Fore.RED}Error: {msg}{Style.RESET_ALL}")
-    exit(1)
-
-def warning(msg):
-    print(f"{Fore.YELLOW}WARNING: {msg}{Style.RESET_ALL}")
-
 def format_stats(mean, std):
     return (r' | $\mu \approx %.0f$' % (mean, )) \
             + (r', $\sigma \approx %.0f$' % (std, ))
 
-def filter_list(mean, std, ls, factor = STD_DEV_FACTOR):
+def filter_list(mean, std, ls, factor = STD_DIST_FACTOR):
     return [elem for elem in ls
                     if abs(elem - mean) <= factor * std]
 
-def bar_plot_set_ylim(ax, data):
-    if data == []:
-        warning("One instruction has no prepare instructions.")
-        return
 
-    y_max = max(data)
-    y_min = min(data)
-
-    space  = 50
-    y_min -= space
-    y_max += space
-
-    ax.set_ylim(y_min, y_max)
-
-def events_set_xlim(ax, stats, dist = 4):
-    min_val = max(min([m - dist*std for m, std in stats]), 0)
-    max_val = max([m + dist*std for m, std in stats])
-    ax.set_xlim(min_val - 1, max_val + 1)
- 
-print("- Start parsing log file")
+logger.line("- Start parsing log file")
 
 total_instr = 0
 
@@ -118,7 +102,7 @@ with open(data_file_path, "r") as data_file:
     while (line != ""):
         match   = re.search(pattern, line)
         if (match == None):
-            error("Wrong number of instructions!")
+            logger.error("Wrong number of instructions!")
 
 
         groups          = match.groups()
@@ -143,12 +127,12 @@ with open(data_file_path, "r") as data_file:
             data[nr_of_parts].append( cycles )
             [ events[nr_of_parts][ev].append(int(msr_str[ev + 1])) for ev in range(nr_events) ]
 
-        print(f"\t- Parsed log for instruction \"{groups[0]}\"")
+        logger.line(f"\t- Parsed log for instruction \"{groups[0]}\"")
 
         nr_of_parts += 1;
         line         = data_file.readline()
 
-print("- Finished parsing log file")
+logger.line("- Finished parsing log file")
 
 ## Calculate mean, standard deviation and remove outliers if needed
 means       = []
@@ -170,26 +154,26 @@ for i in range(nr_of_parts):
                 events[i][ev] = filter_list(ev_mean, ev_std, events[i][ev])
 
     if not args.x_axis:
-            # Set dynamic x coordinates if x_min was not given
-            x_axis_min  = min(min(data)) - int(max(std_devs) * STD_DEV_FACTOR)
-            x_axis_max  = max(max(data)) + int(max(std_devs) * STD_DEV_FACTOR)
-            x_range     = x_axis_max - x_axis_min
-            nr_of_bins  = x_range // 2
+        # Set dynamic x coordinates if x_min was not given
+        x_axis_min  = min(min(data)) - int(max(std_devs) * STD_DIST_FACTOR)
+        x_axis_max  = max(max(data)) + int(max(std_devs) * STD_DIST_FACTOR)
+        x_range     = x_axis_max - x_axis_min
+        nr_of_bins  = x_range // 2
     
-            x_axis  = (x_axis_min, x_axis_max)
-            xvals   = np.linspace(x_axis_min, x_axis_max, 20 * x_range)
+        x_axis  = (x_axis_min, x_axis_max)
+        xvals   = np.linspace(x_axis_min, x_axis_max, 20 * x_range)
 
     # Warn if some data is outside the plotted range
     if x_axis[0] > min(data[i]) or x_axis[1] < max(data[i]):
-        warning(f"Some data (range ({min(data[i])}, {max(data[i])})) is outside "
-              f"the plotted x range {x_axis}!")
+        logger.warning(f"Some data (range ({min(data[i])}, {max(data[i])})) is outside "
+                       f"the plotted x range {x_axis}!")
 
 if FILTER_OUTLIERS:
     filtered_instr = total_instr - sum(len(x) for x in data)
-    print("- Filtered {} outliers (from {} data points) out".format(
+    logger.line("- Filtered {} outliers (from {} data points) out".format(
             filtered_instr, total_instr ))
 else:
-    print("- Filtering outliers is disabled")
+    logger.line("- Filtering outliers is disabled")
 
 ## Make unique labels for legend
 labels          = []
@@ -216,9 +200,6 @@ for i in range(nr_of_parts):
 plural = ""
 if (instrs_set_len > 1):
     plural = "s"
-
-# Plot data with fitted normal distribution and
-# if error was measured also deconvolution.
 
 if plot_events:
     fig, axes   = plt.subplots(nrows = 2, figsize=(14,10), dpi=200)
@@ -259,7 +240,10 @@ for data_idx in range(nr_of_parts):
                           label=events_labels[data_idx][ev] )
 
 if plot_events:
-    events_set_xlim(axes[1], event_stats) 
+    min_val = max(min([m - STD_DIST_FACTOR_EVENTS * std for m, std in event_stats]), 0)
+    max_val = max([m + STD_DIST_FACTOR_EVENTS * std for m, std in event_stats])
+    axes[1].set_xlim(min_val - 1, max_val + 1)
+
     axes[1].set_xlabel("# occurrence event")
     axes[1].legend()
 
@@ -274,7 +258,7 @@ if title_addition:
 # Set title for upper plot
 fig.get_axes()[0].set_title(title_template.format(plural, title_instrs, runs))
 
-print(f"- Use number of bins: {nr_of_bins}")
+logger.line(f"- Use number of bins: {nr_of_bins}")
 ax.set_xlabel(xlabel_template.format( nr_of_bins ))
 for curr_axis in fig.get_axes():
     curr_axis.set_ylabel("# of elements per bin")
@@ -306,4 +290,4 @@ plot_path = plot_path_un + '.png'
 
 plt.savefig(plot_path)
 
-print(f"- DONE, saved plot to file \"{plot_path}\"")
+logger.line(f"- DONE, saved plot to file \"{plot_path}\"")
