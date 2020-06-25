@@ -26,6 +26,7 @@
 
 from colorama import Fore, Style
 from enum import IntEnum
+from sys import stderr
 
 
 # Constants
@@ -47,30 +48,40 @@ class Logger:
     def set_verbose(self):
         self.log_level = LogLevel.VERBOSE
 
-    def print_tagged(self, out):
-        print(f"{self.name}" + out.replace("\n", f"\n{self.name}"))
+    def print_tagged(self, out, **kwargs):
+        print(f"{self.name}" + out.replace("\n", f"\n{self.name}"), **kwargs)
 
-    def error(self, msg):
-        self.print_tagged(f"{Fore.RED}ERROR: {msg}{Style.RESET_ALL}")
+    def error(self, msg, **kwargs):
+        self.print_tagged(f"{Fore.RED}ERROR: {msg}{Style.RESET_ALL}",
+                          file=stderr, **kwargs)
         exit(1)
 
-    def warning(self, msg):
+    def warning(self, msg, **kwargs):
         if self.log_level > LogLevel.SILENT:
-            self.print_tagged(f"{Fore.YELLOW}WARNING: {msg}{Style.RESET_ALL}")
+            self.print_tagged(f"{Fore.YELLOW}WARNING: {msg}{Style.RESET_ALL}",
+                              file=stderr, **kwargs)
 
-    def title(self, title):
+    def success(self, msg, **kwargs):
+        if self.log_level > LogLevel.SILENT:
+            self.print_tagged(f"{Fore.GREEN}SUCCESS: {msg}{Style.RESET_ALL}",
+                              file=stderr, **kwargs)
+
+    def title(self, title, **kwargs):
         if self.log_level > LogLevel.SILENT:
             self.print_tagged(TITLE_SEP)
             for i in range(0, len(title), MAX_LINE_LENGTH):
                 content = title[i:i+MAX_LINE_LENGTH].center(MAX_LINE_LENGTH)
-                self.print_tagged(f"# {content} #")
+                self.print_tagged(f"# {content} #", **kwargs)
             self.print_tagged(TITLE_SEP)
 
-    def line(self, line):
+    def line(self, line, **kwargs):
         if self.log_level > LogLevel.SILENT:
             indent = "#" * INDENT_LEN
-            self.print_tagged(f"{indent} {line}")
+            self.print_tagged(f"{indent} {line}", **kwargs)
 
-    def debug(self, s):
+    def debug(self, s, **kwargs):
         if self.log_level >= LogLevel.VERBOSE:
-            self.print_tagged(f"[DEBUG]: {s}")
+            self.print_tagged(f"[DEBUG]: {s}", **kwargs)
+
+    def raw(self, s, **kwargs):
+        print(s, **kwargs)

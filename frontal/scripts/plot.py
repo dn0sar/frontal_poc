@@ -84,12 +84,12 @@ with open(data_file_path, "r") as data_file:
         title_addition = ''
         if len(addition_parts) > 1:
             title_addition = addition_parts[1]
-        line        = data_file.readline()
+        line = data_file.readline()
 
     # Parse instructions
     pattern     = ("instruction (.+) (?:\(events: (.+)\))*?\(runs: ([0-9]+)")
                   #", interval: ([0-9]+), part: ([0-9]+)/([0-9]+)")
-        
+
     instrs          = []
     data            = []
     events_names    = []
@@ -103,7 +103,6 @@ with open(data_file_path, "r") as data_file:
         match   = re.search(pattern, line)
         if (match == None):
             logger.error("Wrong number of instructions!")
-
 
         groups          = match.groups()
         runs            = int(groups[2]) 
@@ -247,7 +246,6 @@ if plot_events:
     axes[1].set_xlabel("# occurrence event")
     axes[1].legend()
 
-prefix          = ""
 title_instrs    = ", ".join(instrs_set)
 xlabel_template = "# of cycles ({} bins)"
 title_template = "Cycle latency of instruction{} {} (total: {})"
@@ -273,18 +271,16 @@ fig.tight_layout()
 if (addition != ""):
     addition += "_"
     
-plot_name = prefix + "_".join(sorted(instrs_set)) + "_" + \
-            addition + str(runs) + "_plot"
- 
+plot_name = "_".join(sorted(instrs_set)) + "_" + addition + str(runs) + "_plot"
 plot_path = plot_folder + "/" + plot_name
 
 ## find unique name
-inx=0
+idx = 0
 plot_path_un = plot_path
 if isfile(plot_folder + "/.keep"):
     while isfile(plot_path_un + ".png"):
-        inx += 1
-        plot_path_un = plot_path + str(inx)
+        idx += 1
+        plot_path_un = f"plot_path_{idx}"
 
 plot_path = plot_path_un + '.png'
 

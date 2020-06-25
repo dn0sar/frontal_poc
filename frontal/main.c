@@ -356,7 +356,7 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
 
     info("saving the measurements to %s:", fname);
     FILE *fp = fopen(fname, "w");
-    fprintf(fp, "Test name: secret_branch\n");
+    fprintf(fp, "Test name addition: secret_branch\n");
     fprintf(fp, "All instructions timing. Scenario: %d.", ATTACK_SCENARIO);
 
     #if PCM_ENABLED
@@ -367,7 +367,7 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
     fprintf(fp, ")");
     #endif
 
-    fprintf(fp, "\n", NUM_RUNS);
+    fprintf(fp, "\n");
     fprintf(fp, "cycles, secret");
 
     #if (ATTACK_SCENARIO == IPP_LIB)
