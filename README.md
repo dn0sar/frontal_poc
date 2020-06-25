@@ -144,7 +144,3 @@ By running the exact copy of the new version of the IPP library (by setting `ATT
 With these additional `movs,` the branches are clearly distinguishable, despite the fact that the subsequent movs are not even interrupted (they are just present in the speculated instructions stream).
 We think that there are two scenarios in which this type of attack could be realistic.
 First, an attacker can leverage hyperthreading to inject these instructions in the front end at the right time, although this is technically challenging. Second, we also hypothesize that this could be observed if the CPU mis-speculates to a path with a couple of consecutive movs. We did not yet test these two scenarios to see if they produce the same effects as `ATTACKER_SYNC=1`.
-
-## Precomputed plots
-
-There are a couple o examples of the outputs of the Frontal attack PoC in the [frontal/plots](frontal/plots) folder.
