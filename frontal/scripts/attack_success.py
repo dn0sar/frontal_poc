@@ -35,7 +35,7 @@ def hit_rate_sep(sorted_secrets, sep_inx):
         tot_hit = len(secrets) - tot_hit
         fast = 1 - fast
     return ((tot_hit) / len(secrets)) * 100, fast
-    
+
 def kmeans_hit_rate(sorted_cycles, sorted_secrets):
     cycles_array = np.array(sorted_cycles).reshape(-1, 1)
     kmeans = KMeans(n_clusters=2, random_state=None).fit(cycles_array)
@@ -106,7 +106,7 @@ parser.add_argument("-g", "--global_run", default=False, action='store_true',
                     help="The input file contains only one number per run")
 inx_group = parser.add_mutually_exclusive_group(required=True)
 inx_group.add_argument("-i", "--measure_inx", type=int, default=None,
-                    help="Index of the instruction to be used to discriminate branches")                
+                    help="Index of the instruction to be used to discriminate branches")
 inx_group.add_argument("-a", "--all_inx", default=False, action='store_true',
                     help="Analyze all indexes to see which ones are best predictors")
 
@@ -137,7 +137,7 @@ if (iter_num):
 else:
     ms_tuples = []
 # +1 because sometimes we count also the jmp instruction
-iter_cycles = [] 
+iter_cycles = []
 
 iter_idx = 0
 skipped = 0
@@ -158,7 +158,7 @@ with open(log_file_path, "r") as log_file:
                 if (len(iter_cycles) == test_size + 1):
                     del iter_cycles[jump_inx]
                 cycles = iter_cycles
-                
+
                 secret = secret_file.readline()
                 if not to_skip:
                     if not iter_num: ms_tuples.append([])
@@ -168,11 +168,11 @@ with open(log_file_path, "r") as log_file:
                     print("Iteration skipped. Count was: " + str(len(iter_cycles)))
                     skipped += 1
 
-                iter_cycles = [] 
+                iter_cycles = []
             elif not line[0].isdigit():
                 continue
             else:
-                iter_cycles.append(int(line.split(", ")[0]))  
+                iter_cycles.append(int(line.split(", ")[0]))
 
 if (not iter_num):
     iter_num = iter_idx
@@ -240,7 +240,7 @@ for inx in check_inxes:
 
     mean_cycles        = sum(cycles) / iter_num
     if output_file is False:
-        print('\n' + 
+        print('\n' +
               f'Instr index:     {inx}')
         print(f"Mean:            {mean_cycles}")
         print(f"Best threshold:  {cycles[inx_best - 1]}")

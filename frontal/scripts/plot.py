@@ -98,14 +98,14 @@ with open(data_file_path, "r") as data_file:
     nr_events       = 0
     nr_of_parts     = 0
     old_page_nr     = 1
-    
+
     while (line != ""):
         match   = re.search(pattern, line)
         if (match == None):
             logger.error("Wrong number of instructions!")
 
         groups          = match.groups()
-        runs            = int(groups[2]) 
+        runs            = int(groups[2])
         plot_events     = plot_events or groups[1]
 
         instrs.append(groups[0])
@@ -158,7 +158,7 @@ for i in range(nr_of_parts):
         x_axis_max  = max(max(data)) + int(max(std_devs) * STD_DIST_FACTOR)
         x_range     = x_axis_max - x_axis_min
         nr_of_bins  = x_range // 2
-    
+
         x_axis  = (x_axis_min, x_axis_max)
         xvals   = np.linspace(x_axis_min, x_axis_max, 20 * x_range)
 
@@ -189,11 +189,11 @@ for i in range(nr_of_parts):
         instr_label += format_stats(means[i], std_devs[i])
     labels.append(instr_label)
 
-    if plot_events: 
+    if plot_events:
         part_labels = []
         for ev_nr in range(len(events[i])):
             # TODO: Parse from the file the event name
-            part_labels.append(f"{events_names[i][ev_nr]} instr {i}") 
+            part_labels.append(f"{events_names[i][ev_nr]} instr {i}")
         events_labels.append(part_labels)
 
 plural = ""
@@ -213,8 +213,8 @@ bar_all_means   = []
 for data_idx in range(nr_of_parts):
     d = data[data_idx]
 
-    bins_y, _, _ = ax.hist(d, nr_of_bins, 
-                            range=x_axis, histtype='stepfilled', 
+    bins_y, _, _ = ax.hist(d, nr_of_bins,
+                            range=x_axis, histtype='stepfilled',
                             label=labels[data_idx],
                             alpha=0.3, color=default_colors[data_idx])
 
@@ -229,7 +229,7 @@ for data_idx in range(nr_of_parts):
     # Scale height to histogram height
     norm_fn            *= np.max(bins_y) / np.max(norm_fn)
     if add_gaussian:
-        ax.plot(xvals, norm_fn, linewidth=.75, 
+        ax.plot(xvals, norm_fn, linewidth=.75,
                 linestyle='dashed', color=default_colors[data_idx])
 
     if plot_events:
@@ -270,7 +270,7 @@ fig.tight_layout()
 
 if (addition != ""):
     addition += "_"
-    
+
 plot_name = "_".join(sorted(instrs_set)) + "_" + addition + str(runs) + "_plot"
 plot_path = plot_folder + "/" + plot_name
 

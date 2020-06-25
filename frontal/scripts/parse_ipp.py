@@ -67,7 +67,7 @@ with open(log_file_path, "r") as log_file:
         if line[0] == '-':
 
             info = iter_info
-            
+
             if not iter_num: ms_tuples.append([])
             ms_tuples[iter_idx] = (info, secret)
             iter_idx += 1
