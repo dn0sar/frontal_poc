@@ -18,7 +18,7 @@ ifeq ($(SGX_SDK),)
     SGX_SDK          = /opt/intel/sgxsdk
 endif
 export SGX_SDK
-ifndef URTS_LD_LIBRARY_PATH 
+ifndef URTS_LD_LIBRARY_PATH
     ifneq ($(SGX_SDK), /opt/intel/sgxsdk)
         URTS_LD_LIBRARY_PATH = LD_LIBRARY_PATH=$(LIBSGXSTEP_DIR)/linux-sgx/psw/urts/linux
     endif
@@ -51,7 +51,10 @@ LDFLAGS             += -lsgx-step -lencl_proxy -lsgx_urts \
                        -L$(LIBSGXSTEP_DIR)/linux-sgx/psw/urts/linux
 
 SOURCES              = $(shell ls *.c)
-PCM_SOURCES          = $(PCU_DIR)/msr.cpp $(PCU_DIR)/cpucounters.cpp $(PCU_DIR)/pci.cpp $(PCU_DIR)/mmio.cpp $(PCU_DIR)/client_bw.cpp $(PCU_DIR)/utils.cpp $(PCU_DIR)/perf_counters.cpp
+PCM_SOURCES          = $(PCU_DIR)/msr.cpp $(PCU_DIR)/cpucounters.cpp \
+                       $(PCU_DIR)/pci.cpp $(PCU_DIR)/mmio.cpp \
+                       $(PCU_DIR)/client_bw.cpp $(PCU_DIR)/utils.cpp \
+                       $(PCU_DIR)/perf_counters.cpp
 PCM_OBJ              = $(PCU_DIR)/mylibPCM.a
 OBJECTS              = $(SOURCES:.c=.o)
 OUTPUT               = app
@@ -76,7 +79,9 @@ BUILDDIRS						= $(SUBDIRS:%=build-%)
 LIBBUILDDIRS                    = $(LIBSUBDIRS:%=build-%)
 CLEANDIRS						= $(SUBDIRS:%=clean-%)
 LIBCLEANDIRS                    = $(LIBSUBDIRS:%=clean-%)
-LOGS							= $(wildcard $(LOGS_DIR)/*.log) $(LOGS_DIR)/out.txt $(LOGS_DIR)/secrets.txt $(LOGS_DIR)/measurements.txt $(LOGS_DIR)/ipp_meas.txt
+LOGS							= $(wildcard $(LOGS_DIR)/*.log) $(LOGS_DIR)/out.txt \
+                                  $(LOGS_DIR)/secrets.txt $(LOGS_DIR)/measurements.txt \
+                                  $(LOGS_DIR)/ipp_meas.txt
 
 ifndef NUM
     NUM             = 100
@@ -92,7 +97,8 @@ export ALIGN1
 export ALIGN2
 export SGX_STEP_TIMER_INTERVAL
 
-CFLAGS += -DATTACK_SCENARIO=$(ATTACK_SCENARIO) -DNUM_RUNS=$(NUM) -DPCM_ENABLED=$(PCM_ENABLED) -DNUM_PCMS=${NUM_PCMS}
+CFLAGS += -DATTACK_SCENARIO=$(ATTACK_SCENARIO) -DNUM_RUNS=$(NUM) \
+          -DPCM_ENABLED=$(PCM_ENABLED) -DNUM_PCMS=${NUM_PCMS}
 
 ifdef SGX_STEP_TIMER_INTERVAL
 	CFLAGS += -DSGX_STEP_TIMER_INTERVAL=${SGX_STEP_TIMER_INTERVAL}
@@ -103,7 +109,7 @@ endif
 
 
 all: $(OUTPUT)
-	
+
 run: clean all
 	touch $(LOGS_DIR)/out.txt
 	tail -f $(LOGS_DIR)/out.txt & TAIL_PID=$$!
@@ -124,16 +130,19 @@ parse: run
 plot: parse
 	$(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/movs_0_${NUM}.log
 	# The following will compute the success probability based on the first mov
-	$(ATTACK_SUCC_SCRIPT) -j 1 -s $$(( 2 * $(NUM_INSTR) + 1 )) -i 2 $(LOGS_DIR)/measurements.txt $(LOGS_DIR)/secrets.txt 
+	$(ATTACK_SUCC_SCRIPT) -j 1 -s $$(( 2 * $(NUM_INSTR) + 1 )) -i 2 \
+	$(LOGS_DIR)/measurements.txt $(LOGS_DIR)/secrets.txt
 
 plot-all: SHELL:=/bin/bash
 plot-all: parse
-	for i in {1..${NUM_INSTR}}; do $(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/movs_$$((i-1))_${NUM}.log; done
+	for i in {1..${NUM_INSTR}}; \
+	do $(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/movs_$$((i-1))_${NUM}.log; \
+	done
 endif
 
 $(OUTPUT): $(BUILDDIRS) $(LIBBUILDDIRS) $(OBJECTS)
-	echo "$(INDENT)[LD]" $(OBJECTS) $(LIBS) -o $(OUTPUT) 
-	$(LD) $(OBJECTS) $(LDFLAGS) -o $(OUTPUT) 
+	echo "$(INDENT)[LD]" $(OBJECTS) $(LIBS) -o $(OUTPUT)
+	$(LD) $(OBJECTS) $(LDFLAGS) -o $(OUTPUT)
 
 %.o : %.c
 	echo "$(INDENT)[CC] " $<
