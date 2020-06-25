@@ -1,6 +1,11 @@
 PROJECT_TOP          = ..
 LIBSGXSTEP_DIR       = $(PROJECT_TOP)/sgx-step
 LIBSGXSTEP           = $(LIBSGXSTEP_DIR)/libsgxstep
+
+# Do not modify the following 2 variables
+MICROBENCH = 1
+IPP_LIB    = 2
+
 -include $(LIBSGXSTEP)/Makefile.config
 
 ifeq ($(SGX_SDK),)

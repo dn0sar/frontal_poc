@@ -119,7 +119,7 @@ size_t cur_measurement_index;
 /* ================== ATTACKER IRQ/FAULT HANDLERS ================= */
 
 #pragma GCC push_options
-#pragma GCC optimize ("unroll-loops")
+#pragma GCC optimize ("loop-unroll-and-jam")
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 uint64_t aep_cb_func(void) {
     uint8_t cnt_instr;
@@ -442,7 +442,7 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
 
     if (!abnormal) return 0;
 
-    error("Detected %d  runs.. Try to tweak the SGX_STEP_TIMER_INTERVAL value. (Currently it's probably too high)\n", abnormal);
+    error("Detected %d abnormal runs.. Try to tweak the SGX_STEP_TIMER_INTERVAL value. (Currently it's probably too high)\n", abnormal);
     return -1;
 }
 
@@ -528,7 +528,7 @@ int main(int argc, const char **argv)
     }
     // ASSERT(syscall(SYS_getrandom, secret_arr, secret_arr_size, 0));
 
-    info("initialize log array");
+    info("initializing log array");
     #if (ATTACK_SCENARIO == MICROBENCH)
     log_arr_size = NUM_RUNS * (NUM_INSTR * 2 + 3);
     #elif (ATTACK_SCENARIO == IPP_LIB)
