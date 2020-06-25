@@ -2,7 +2,8 @@
  *  This file is part of the Frontal attack PoC.
  *
  *  Copyright (C) 2020 Ivan Puddu <ivan.puddu@inf.ethz.ch>,
- *                     Moritz Schneider <moritz.schneider@inf.ethz.ch>
+ *                     Moritz Schneider <moritz.schneider@inf.ethz.ch>,
+ *                     Miro Haller <miro.haller@alumni.ethz.ch>
  *
  *  The Frontal attack PoC is free software: you can redistribute it
  *  and/or modify it under the terms of the GNU General Public License

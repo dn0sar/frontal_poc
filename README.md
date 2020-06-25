@@ -1,8 +1,25 @@
 # Frontal Attack PoC
 
+## Abstract
+
+We introduce a new timing side-channel attack on Intel CPU processors. Our Frontal attack exploits the way that CPU frontend fetches and processes instructions while being interrupted. In particular, we observe that in modern Intel CPUs, some instruction's execution times will depend on which operations precede and succeed them, and on their virtual addresses. Unlike previous attacks that could only profile branches if they contained different code or were based on conditional jumps, the attack allows the adversary to distinguish between instruction-wise identical branches. As the attack requires OS capabilities to set the interrupts, we use it to exploit SGX enclaves. Our attack demonstrates that a realistic SGX attacker can always observe the full enclave instruction trace, and secret-depending branching should not be used even alongside defenses to current controlled-channel attacks. We show that the adversary can use the Frontal attack to extract a secret from an SGX enclave if that secret was used as a branching condition for two instruction-wise identical branches. The attack can be exploited against several crypto libraries and affects all Intel CPUs.
+
+```
+@misc{puddu2020frontal,
+    title={Frontal Attack: Leaking Control-Flow in SGX via the CPU Frontend},
+    author={Ivan Puddu and Moritz Schneider and Miro Haller and Srdjan Čapkun},
+    year={2020},
+    eprint={2005.11516},
+    archivePrefix={arXiv},
+    primaryClass={cs.CR}
+}
+```
+
+The paper and the attack are based upon initial observations made during Miro Haller's [Bachelor thesis](https://github.com/Miro-H/bachelor-thesis-sgx).
+
 ## Setup
 
-  - Please follow the installation instructions in the README_sgxstep.md to install SGXStep.
+  - Please follow the installation instructions in the [sgx-step/README.md](sgx-step/README.md) to install SGXStep.
   
     To do that: run the two scripts: `install_SGX_driver.sh` and `install_SGX_SDK.sh`.
   Make sure to source the SGXSDK environment file after that.
@@ -13,33 +30,32 @@
     ```
 
   - Make sure that the kernel module is loaded
-    ```console
-    make load -C kernel
+    ```
+    make load -C sgx-step/kernel
     ```
   - Install python-3.6
     - Ubuntu 18.04 has the correct version in python3
     - Ubuntu 16.04 needs an [additional ppa to install python3.6 ](https://askubuntu.com/questions/865554/how-do-i-install-python-3-6-using-apt-get) 
-  - Install the python requirements.txt in the app/frontal directory (pip3 install -r requirements.txt)
+  - Install the python requirements.txt in the [frontal](frontal) directory
     ```
-    cd app/frontal
-    pip3 install -r requirements.txt
+    pip3 install -r frontal/requirements.txt
     ```
 
 ## Configuration
 
-There are several parameters that can be tweaked in [app/frontal/Makefile.config](app/frontal/Makefile.config). The most important one is the `SGX_STEP_TIMER_INTERVAL` value that sets up the APIC counter for sgx-step. A suitable value will make sure that the script runs without errors. This value is platform specific.
+There are several parameters that can be tweaked in [frontal/Makefile.config](app/frontal/Makefile.config). The most important one is the `SGX_STEP_TIMER_INTERVAL` value that sets up the APIC counter for sgx-step. A suitable value will make sure that the script runs without errors. This value is platform specific see also [sgx-step/README.md](sgx-step/README.md). Note that for the frontal attack we use the a APIC division of 1. Hence, as a rule of thumb the values for the stock SGX-Step need to be roughly doubled to work with our changes.
 
 Troubleshooting: 
-  - Too high values will produce the followin error: 
+  - Too high values will produce an error similar to the following: 
     ```
     [main.c] ERROR: Detected 10000 abnormal runs.. Try to tweak the SGX_STEP_TIMER_INTERVAL value. (Currently it's probably too high)
     ```
-  - Too low values will either produce a `segmentation fault` or will cause the program to wait indefinately. Try terminating and increasing the value if this happens
+  - Too low values will either produce a `segmentation fault` or will cause the program to wait indefinately. Try first to re-load the kernel module and relaunching the app in these cases, and if the errors keep happening increase the value of `SGX_STEP_TIMER_INTERVAL`.
 
 There are several other parameters that can be played with in [app/frontal/Makefile.config](app/frontal/Makefile.config). But the default ones should clearly show a high attack success probability.
 
 **Important:** If you get a log with several of the following messages:
-`[main.c] Caught fault 11! Restoring enclave page permissions.` Please make sure that `CR4.UMIP` bit is unset. This is necessary for the code to run properly.
+`[main.c] Caught fault 11! Restoring enclave page permissions.` Please make sure that CPU `CR4.UMIP` bit is unset. This is necessary for the code to run properly.
 
 ## Running the Attack
 
