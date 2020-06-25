@@ -1,3 +1,14 @@
+MAKEFILE_DIR        = $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+PLOTS_DIR           = $(MAKEFILE_DIR)/plots
+LOGS_DIR            = $(MAKEFILE_DIR)/logs
+SCRIPTS_DIR         = $(MAKEFILE_DIR)/scripts
+
+PARSE_SCRIPT        = $(SCRIPTS_DIR)/parse.py
+PARSE_IPP_SCRIPT    = $(SCRIPTS_DIR)/parse_ipp.py
+PLOT_SCRIPT         = $(SCRIPTS_DIR)/plot.py
+ATTACK_SUCC_SCRIPT  = $(SCRIPTS_DIR)/attack_success.py
+
+
 PROJECT_TOP          = ..
 LIBSGXSTEP_DIR       = $(PROJECT_TOP)/sgx-step
 LIBSGXSTEP           = $(LIBSGXSTEP_DIR)/libsgxstep
@@ -65,7 +76,7 @@ BUILDDIRS						= $(SUBDIRS:%=build-%)
 LIBBUILDDIRS                    = $(LIBSUBDIRS:%=build-%)
 CLEANDIRS						= $(SUBDIRS:%=clean-%)
 LIBCLEANDIRS                    = $(LIBSUBDIRS:%=clean-%)
-LOGS							= $(wildcard logs/*.log) logs/out.txt logs/secrets.txt logs/measurements.txt logs/ipp_meas.txt
+LOGS							= $(wildcard $(LOGS_DIR)/*.log) $(LOGS_DIR)/out.txt $(LOGS_DIR)/secrets.txt $(LOGS_DIR)/measurements.txt $(LOGS_DIR)/ipp_meas.txt
 
 ifndef NUM
     NUM             = 100
@@ -94,34 +105,30 @@ endif
 all: $(OUTPUT)
 	
 run: clean all
-	mkdir -p logs
-	touch logs/out.txt
-	tail -f logs/out.txt & TAIL_PID=$$!
-	$(URTS_LD_LIBRARY_PATH) ./app $(EVENTS) > logs/out.txt || EXIT_CODE=$$?
+	touch $(LOGS_DIR)/out.txt
+	tail -f $(LOGS_DIR)/out.txt & TAIL_PID=$$!
+	$(URTS_LD_LIBRARY_PATH) ./app $(EVENTS) > $(LOGS_DIR)/out.txt || EXIT_CODE=$$?
 	kill -TERM $$TAIL_PID
 	exit $$EXIT_CODE
 
 ifeq ($(ATTACK_SCENARIO),IPP_LIB)
 parse: run
-	./parse_ipp.py logs/measurements.txt > logs/ipp_meas.txt
+	$(PARSE_IPP_SCRIPT) $(LOGS_DIR)/measurements.txt > $(LOGS_DIR)/ipp_meas.txt
 
 plot: parse
-	mkdir -p plots
-	./plot.py -o plots logs/ipp_meas.txt
+	$(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/ipp_meas.txt
 else
 parse: run
-	./parse.py -r ${NUM} -i ${NUM_INSTR}
+	$(PARSE_SCRIPT) -r ${NUM} -i ${NUM_INSTR}
 
 plot: parse
-	mkdir -p plots
-	./plot.py -o plots logs/movs_0_${NUM}.log
+	$(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/movs_0_${NUM}.log
 	# The following will compute the success probability based on the first mov
-	./attack_success.py -j 1 -s $$(( 2 * $(NUM_INSTR) + 1 )) -i 2 logs/measurements.txt logs/secrets.txt 
+	$(ATTACK_SUCC_SCRIPT) -j 1 -s $$(( 2 * $(NUM_INSTR) + 1 )) -i 2 $(LOGS_DIR)/measurements.txt $(LOGS_DIR)/secrets.txt 
 
 plot-all: SHELL:=/bin/bash
 plot-all: parse
-	mkdir -p plots
-	for i in {1..${NUM_INSTR}}; do ./plot.py -o plots logs/movs_$$((i-1))_${NUM}.log; done
+	for i in {1..${NUM_INSTR}}; do $(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/movs_$$((i-1))_${NUM}.log; done
 endif
 
 $(OUTPUT): $(BUILDDIRS) $(LIBBUILDDIRS) $(OBJECTS)

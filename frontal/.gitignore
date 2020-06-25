@@ -1,10 +1,11 @@
 app
-logs
-plots
+logs/*
+!logs/.keep
+plots/*
+!plots/.keep
 outlier_idx.txt
 plot.pdf
 xlabels.gp
-logs
 
 *.swp
 
