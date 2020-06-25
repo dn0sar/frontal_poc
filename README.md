@@ -1,5 +1,7 @@
 # Frontal Attack PoC
 
+The paper containing the details of the Frontal attack can be found [here](https://arxiv.org/pdf/2005.11516.pdf).
+
 ## Abstract
 
 We introduce a new timing side-channel attack on Intel CPU processors. Our Frontal attack exploits the way that CPU frontend fetches and processes instructions while being interrupted. In particular, we observe that in modern Intel CPUs, some instruction's execution times will depend on which operations precede and succeed them, and on their virtual addresses. Unlike previous attacks that could only profile branches if they contained different code or were based on conditional jumps, the attack allows the adversary to distinguish between instruction-wise identical branches. As the attack requires OS capabilities to set the interrupts, we use it to exploit SGX enclaves. Our attack demonstrates that a realistic SGX attacker can always observe the full enclave instruction trace, and secret-depending branching should not be used even alongside defenses to current controlled-channel attacks. We show that the adversary can use the Frontal attack to extract a secret from an SGX enclave if that secret was used as a branching condition for two instruction-wise identical branches. The attack can be exploited against several crypto libraries and affects all Intel CPUs.
@@ -14,6 +16,8 @@ We introduce a new timing side-channel attack on Intel CPU processors. Our Front
     primaryClass={cs.CR}
 }
 ```
+
+
 
 The paper and the attack are based upon initial observations made during Miro Haller's [Bachelor thesis](https://github.com/Miro-H/bachelor-thesis-sgx).
 
