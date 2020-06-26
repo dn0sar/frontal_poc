@@ -141,7 +141,7 @@ $(OUTPUT): $(BUILDDIRS) $(LIBBUILDDIRS) $(OBJECTS)
 	echo "$(INDENT)[AS] " $<
 	$(AS) $(ASFLAGS) $(INCLUDE) -c $< -o $@
 
-clean: $(CLEANDIRS)
+clean: $(CLEANDIRS) $(LIBCLEANDIRS)
 	echo "$(INDENT)[RM]" $(OBJECTS) $(OUTPUT)
 	rm -f $(OBJECTS) $(OUTPUT)
 	rm -f $(LOGS)

@@ -17,9 +17,7 @@ We introduce a new timing side-channel attack on Intel CPU processors. Our Front
 }
 ```
 
-
-
-The paper and the attack are based upon initial observations made during Miro Haller's [Bachelor thesis](https://github.com/Miro-H/bachelor-thesis-sgx).
+The paper and the attack are based upon initial observations made during Miro Haller's [Bachelor thesis](https://github.com/Miro-H/bachelor-thesis-sgx), which also contains detailed explanations of the changes we made to the SGX-Step framework.
 
 ## Setup
 
@@ -56,7 +54,7 @@ Troubleshooting:
     ```
   - Too low values will either produce a `segmentation fault` or will cause the program to wait indefinately. Try first to re-load the kernel module and relaunching the app in these cases, and if the errors keep happening increase the value of `SGX_STEP_TIMER_INTERVAL`.
 
-There are several other parameters that can be played with in [frontal/Makefile.config](frontal/Makefile.config). But the default ones should clearly show a high attack success probability.
+There are several other parameters that can be played with in [frontal/Makefile.config](frontal/Makefile.config). For instance, we added the possibility to also capture performance counters values alongside the timing information of each instruction. This can enabled by setting `PCM_ENABLED=1`. Details about the various parameters can be found at [frontal/README.md](frontal/README.md). The pre-set parameters should clearly show a high attack success probability.
 
 **Important:** If you get a log with several of the following messages:
 `[main.c] Caught fault 11! Restoring enclave page permissions.` Please make sure that CPU `CR4.UMIP` bit is unset. This is necessary for the code to run properly.
@@ -144,3 +142,8 @@ By running the exact copy of the new version of the IPP library (by setting `ATT
 With these additional `movs,` the branches are clearly distinguishable, despite the fact that the subsequent movs are not even interrupted (they are just present in the speculated instructions stream).
 We think that there are two scenarios in which this type of attack could be realistic.
 First, an attacker can leverage hyperthreading to inject these instructions in the front end at the right time, although this is technically challenging. Second, we also hypothesize that this could be observed if the CPU mis-speculates to a path with a couple of consecutive movs. We did not yet test these two scenarios to see if they produce the same effects as `ATTACKER_SYNC=1`.
+
+## Notes on changes from the mainstream SGX-Step
+If you have an app that worked with the SGX-Step library and want to integrate it with our changes (for instance, if you want to analyze the performance counters values), note that we slightly changed the libsgxstep interface to improve stability. The APIC counter is now automatically set in `aep_trampoline.S` with the value returned from the `aep_cb_fun` in your `main.c` file. Furthermore, we use a divisor of `1` instead of `2` (See [sgx-step/libsgxstep/apic.h](sgx-step/libsgxstep/apic.h)), and we made other changes to improve stability that require a bigger APIC counter value.
+
+In short, if you had a working SGX-Step setup, you might need to roughly double your current `SGX_STEP_TIMER_INTERVAL` (and possibly increase it a bit more after that) to make it work with our changes, and have this value as `return` in your `aep_cb_fun` (instead of calling `apic_timer_irq( SGX_STEP_TIMER_INTERVAL )`).
