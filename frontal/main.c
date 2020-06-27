@@ -2,8 +2,8 @@
  *  This file is part of the Frontal attack PoC.
  *
  *  Copyright (C) 2020 Ivan Puddu <ivan.puddu@inf.ethz.ch>,
- *                     Moritz Schneider <moritz.schneider@inf.ethz.ch>,
  *                     Miro Haller <miro.haller@alumni.ethz.ch>
+ *                     Moritz Schneider <moritz.schneider@inf.ethz.ch>,
  *
  *  The Frontal attack PoC is free software: you can redistribute it
  *  and/or modify it under the terms of the GNU General Public License
@@ -118,9 +118,10 @@ size_t cur_measurement_index;
 
 /* ================== ATTACKER IRQ/FAULT HANDLERS ================= */
 
-#pragma GCC push_options
-#pragma GCC optimize ("unroll-loops")
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
+// Change optimization level for this function only to unroll loops and
+// further linearize the code even when PCMs are enabled
+__attribute__ ((optimize(3)))
 uint64_t aep_cb_func(void) {
     uint8_t cnt_instr;
 
@@ -157,7 +158,9 @@ uint64_t aep_cb_func(void) {
     if ( __builtin_expect(cnt_instr, 1) )
     {
         uint64_t cycles = nemesis_tsc_aex - nemesis_tsc_eresume;
-        log_arr[cur_measurement_index] = (measurement_t){cycles, ACCESSED(*pte_encl), *do_cnt_instr};
+        // We just make sure to not get out of bounds here to keep the code linear
+        // We check later if more measurements were done
+        log_arr[cur_measurement_index % log_arr_size] = (measurement_t){cycles, ACCESSED(*pte_encl), *do_cnt_instr};
         #if PCM_ENABLED
         for (i = 0; i < NUM_PCMS; i++) {
             log_arr[cur_measurement_index].pcms[i] = pcms[i];
@@ -209,8 +212,6 @@ uint64_t aep_cb_func(void) {
     }
     return 0;
 }
-
-#pragma GCC pop_options
 
 /* Called upon SIGSEGV caused by untrusted page tables. */
 void fault_handler(int signal)
@@ -352,6 +353,12 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
     const char* fname = "./logs/measurements.txt";
     const char* sname = "./logs/secrets.txt";
     int i, pcms_print_inx;
+
+    if (cur_measurement_index > log_arr_size) {
+        error("Detected more measurements that could be logged. Please check that the size of the `log_arr_size` variable was set correctly.");
+        return -1;
+    }
+
     FILE *sf = fopen(sname, "w");
 
     info("saving the measurements to %s:", fname);
@@ -442,7 +449,7 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
 
     if (!abnormal) return 0;
 
-    error("Detected %d  runs.. Try to tweak the SGX_STEP_TIMER_INTERVAL value. (Currently it's probably too high)\n", abnormal);
+    error("Detected %d abnormal runs.. Try to tweak the SGX_STEP_TIMER_INTERVAL value. (Currently it's probably too high)\n", abnormal);
     return -1;
 }
 
@@ -528,7 +535,7 @@ int main(int argc, const char **argv)
     }
     // ASSERT(syscall(SYS_getrandom, secret_arr, secret_arr_size, 0));
 
-    info("initialize log array");
+    info("initializing log array");
     #if (ATTACK_SCENARIO == MICROBENCH)
     log_arr_size = NUM_RUNS * (NUM_INSTR * 2 + 3);
     #elif (ATTACK_SCENARIO == IPP_LIB)

@@ -12,6 +12,11 @@ ATTACK_SUCC_SCRIPT  = $(SCRIPTS_DIR)/attack_success.py
 PROJECT_TOP          = ..
 LIBSGXSTEP_DIR       = $(PROJECT_TOP)/sgx-step
 LIBSGXSTEP           = $(LIBSGXSTEP_DIR)/libsgxstep
+
+# Do not modify the following 2 variables
+MICROBENCH = 1
+IPP_LIB    = 2
+
 -include $(LIBSGXSTEP)/Makefile.config
 
 ifeq ($(SGX_SDK),)
@@ -152,7 +157,7 @@ $(OUTPUT): $(BUILDDIRS) $(LIBBUILDDIRS) $(OBJECTS)
 	echo "$(INDENT)[AS] " $<
 	$(AS) $(ASFLAGS) $(INCLUDE) -c $< -o $@
 
-clean: $(CLEANDIRS)
+clean: $(CLEANDIRS) $(LIBCLEANDIRS)
 	echo "$(INDENT)[RM]" $(OBJECTS) $(OUTPUT)
 	rm -f $(OBJECTS) $(OUTPUT)
 	rm -f $(LOGS)

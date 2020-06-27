@@ -1,5 +1,25 @@
 #!/usr/bin/python3
 
+#   This file is part of the Frontal attack PoC.
+#
+#   Copyright (C) 2020 Ivan Puddu <ivan.puddu@inf.ethz.ch>,
+#                      Miro Haller <miro.haller@alumni.ethz.ch>
+#                      Moritz Schneider <moritz.schneider@inf.ethz.ch>,
+#
+#   The Frontal attack PoC is free software: you can redistribute it
+#   and/or modify it under the terms of the GNU General Public License
+#   as published by the Free Software Foundation, either version 3 of
+#   the License, or (at your option) any later version.
+#
+#   The Frontal attack PoC is distributed in the hope that it will
+#   be useful, but WITHOUT ANY WARRANTY; without even the implied
+#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#   See the GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with the Frontal attack PoC.
+#   If not, see <http://www.gnu.org/licenses/>.
+
 #--------------------------------------------------------------------------------
 # This script parses the output of the frontal attack PoC
 # and outputs the precision (how many branches were detected correctly)
