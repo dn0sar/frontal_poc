@@ -300,7 +300,7 @@ plot_path_un = plot_path
 if isfile(plot_folder + "/.keep"):
     while isfile(plot_path_un + ".png"):
         idx += 1
-        plot_path_un = f"plot_path_{idx}"
+        plot_path_un = f"{plot_path}_{idx}"
 
 plot_path = plot_path_un + '.png'
 
