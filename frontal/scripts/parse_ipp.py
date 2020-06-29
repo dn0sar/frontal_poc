@@ -3,8 +3,8 @@
 #   This file is part of the Frontal attack PoC.
 #
 #   Copyright (C) 2020 Ivan Puddu <ivan.puddu@inf.ethz.ch>,
-#                      Miro Haller <miro.haller@alumni.ethz.ch>
-#                      Moritz Schneider <moritz.schneider@inf.ethz.ch>,
+#                      Miro Haller <miro.haller@alumni.ethz.ch>,
+#                      Moritz Schneider <moritz.schneider@inf.ethz.ch>
 #
 #   The Frontal attack PoC is free software: you can redistribute it
 #   and/or modify it under the terms of the GNU General Public License
@@ -47,15 +47,17 @@ help_msgs = {
 
 parser = argparse.ArgumentParser()
 parser.add_argument("log_file", help=help_msgs["log_file"])
-parser.add_argument("-n", "--iters_num", help=help_msgs["--iters_num"],
+parser.add_argument("-r", "--num_runs", help=help_msgs["--iters_num"],
                     type=int, default=None)
 parser.add_argument("-v", "--verbose", help=help_msgs["--verbose"], action="store_true")
+## This argument is here just to keep the same interface with the other parse script
+parser.add_argument("-i", help=argparse.SUPPRESS, required=False)
 
 args = parser.parse_args()
 log_file_path       = args.log_file
-iter_num            = args.iters_num
+iter_num            = args.num_runs
 iter_idx            = 0
-verbose              = args.verbose
+verbose             = args.verbose
 
 logger = Logger(parser.prog)
 if verbose:
@@ -101,17 +103,23 @@ with open(log_file_path, "r") as log_file:
             secret = line_items[1]
             iter_info.append([line_items[0]] + line_items[2:])
 
-logger.debug("Found events " + events)
+if events:
+    logger.debug("Found events " + events)
 
 if (not iter_num):
     iter_num = iter_idx
 
-logger.debug(f'Detected {iter_idx} iterations\n')
-
+if (iter_num != iter_idx):
+    logger.error(f'Detected {iter_idx} out of {iter_num} iterations.\n' + \
+                "Try decreasing the Is the SGX_STEP_TIMER to detect all instruction")
 
 avgs = [0] * len(instr_dict)
 for inx, comb in enumerate(instr_dict):
     lengths = get_path_length(ms_tuples, comb)
+    if len(lengths) > 4:
+        logger.error("Detected abnormal runs.. Try decreasing the SGX_STEP_TIMER interval.")
+    if len(lengths) > 1:
+        logger.warning("Detected abnormal runs.. Is the SGX_STEP_TIMER interval too low?")
     for l in lengths:
         logger.debug(
             f"Detected {l} instructions in the {instr_dict[comb][1]} path"
@@ -145,11 +153,11 @@ for part_num, comb in enumerate(instr_dict):
             logger.raw('')
 
 if (abs(avgs[0][0] - avgs[1][0]) > 20) or (abs(avgs[0][0] - avgs[2][0]) > 20):
-    logger.warning(
+    logger.line(
         "The attacker can use the frontal attack to exploit this run of "
         "the code."
     )
 else:
-    logger.success(
+    logger.line(
         "The attacker cannot exploit this run of the code with the frontal attack."
     )

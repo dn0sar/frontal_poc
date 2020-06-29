@@ -3,8 +3,8 @@
 #   This file is part of the Frontal attack PoC.
 #
 #   Copyright (C) 2020 Ivan Puddu <ivan.puddu@inf.ethz.ch>,
-#                      Moritz Schneider <moritz.schneider@inf.ethz.ch>,
-#                      Miro Haller <miro.haller@alumni.ethz.ch>
+#                      Miro Haller <miro.haller@alumni.ethz.ch>,
+#                      Moritz Schneider <moritz.schneider@inf.ethz.ch>
 #
 #   The Frontal attack PoC is free software: you can redistribute it
 #   and/or modify it under the terms of the GNU General Public License
@@ -33,7 +33,7 @@ from sys import stderr
 TITLE_LINE_LEN  = 64
 MAX_LINE_LENGTH = TITLE_LINE_LEN - 4
 TITLE_SEP       = "#" * TITLE_LINE_LEN
-INDENT_LEN      = 4
+INDENT_LEN      = 0
 
 class LogLevel(IntEnum):
     SILENT  = 0
@@ -68,20 +68,20 @@ class Logger:
 
     def title(self, title, **kwargs):
         if self.log_level > LogLevel.SILENT:
-            self.print_tagged(TITLE_SEP)
+            self.print_tagged(TITLE_SEP, file=stderr)
             for i in range(0, len(title), MAX_LINE_LENGTH):
                 content = title[i:i+MAX_LINE_LENGTH].center(MAX_LINE_LENGTH)
-                self.print_tagged(f"# {content} #", **kwargs)
-            self.print_tagged(TITLE_SEP)
+                self.print_tagged(f"# {content} #", file=stderr, **kwargs)
+            self.print_tagged(TITLE_SEP, file=stderr)
 
     def line(self, line, **kwargs):
         if self.log_level > LogLevel.SILENT:
             indent = "#" * INDENT_LEN
-            self.print_tagged(f"{indent} {line}", **kwargs)
+            self.print_tagged(f"{indent} {line}", file=stderr, **kwargs)
 
     def debug(self, s, **kwargs):
         if self.log_level >= LogLevel.VERBOSE:
-            self.print_tagged(f"[DEBUG]: {s}", **kwargs)
+            self.print_tagged(f"[DEBUG]: {s}", file=stderr, **kwargs)
 
     def raw(self, s, **kwargs):
         print(s, **kwargs)

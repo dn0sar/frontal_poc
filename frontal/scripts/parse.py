@@ -3,8 +3,8 @@
 #   This file is part of the Frontal attack PoC.
 #
 #   Copyright (C) 2020 Ivan Puddu <ivan.puddu@inf.ethz.ch>,
-#                      Miro Haller <miro.haller@alumni.ethz.ch>
-#                      Moritz Schneider <moritz.schneider@inf.ethz.ch>,
+#                      Miro Haller <miro.haller@alumni.ethz.ch>,
+#                      Moritz Schneider <moritz.schneider@inf.ethz.ch>
 #
 #   The Frontal attack PoC is free software: you can redistribute it
 #   and/or modify it under the terms of the GNU General Public License
@@ -26,12 +26,14 @@ import numpy as numpy
 from logger import Logger
 
 help_msgs = {
+    "log_file":     "path to log file to parse",
     "--num_runs":   "number of runs of the branch",
     "--num_instr":  "number of pairs of (test-mov) per branch",
     "--verbose":    "print debug output",
 }
 
 parser = argparse.ArgumentParser()
+parser.add_argument("log_file", help=help_msgs["log_file"])
 parser.add_argument("-r", "--num_runs", help=help_msgs["--num_runs"],
                     type=int, required=True)
 parser.add_argument("-i", "--num_instr", help=help_msgs["--num_instr"],
@@ -39,10 +41,10 @@ parser.add_argument("-i", "--num_instr", help=help_msgs["--num_instr"],
 parser.add_argument("-v", "--verbose", help=help_msgs["--verbose"], action="store_true")
 
 args = parser.parse_args()
-
-num_runs    = args.num_runs
-num_instr   = args.num_instr
-verbose     = args.verbose
+log_file_path   = args.log_file
+num_runs        = args.num_runs
+num_instr       = args.num_instr
+verbose         = args.verbose
 
 logger = Logger(parser.prog)
 logger.title("Parse log file")
@@ -101,7 +103,7 @@ def split_into_instructions(data, secrets, num_instr):
     return tests, movs, inx_skipped
 
 
-data, secrets, events = load_file("logs/measurements.txt")
+data, secrets, events = load_file(log_file_path)
 
 tests, movs, skipped = split_into_instructions(data, secrets, num_instr)
 

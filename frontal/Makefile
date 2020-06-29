@@ -3,11 +3,10 @@ PLOTS_DIR           = $(MAKEFILE_DIR)/plots
 LOGS_DIR            = $(MAKEFILE_DIR)/logs
 SCRIPTS_DIR         = $(MAKEFILE_DIR)/scripts
 
-PARSE_SCRIPT        = $(SCRIPTS_DIR)/parse.py
+PARSE_MICRO_SCRIPT  = $(SCRIPTS_DIR)/parse.py
 PARSE_IPP_SCRIPT    = $(SCRIPTS_DIR)/parse_ipp.py
 PLOT_SCRIPT         = $(SCRIPTS_DIR)/plot.py
 ATTACK_SUCC_SCRIPT  = $(SCRIPTS_DIR)/attack_success.py
-
 
 PROJECT_TOP          = ..
 LIBSGXSTEP_DIR       = $(PROJECT_TOP)/sgx-step
@@ -64,6 +63,24 @@ PCM_OBJ              = $(PCU_DIR)/mylibPCM.a
 OBJECTS              = $(SOURCES:.c=.o)
 OUTPUT               = app
 
+
+# Set the right envirnment depending on the attack scenario
+ifeq ($(ATTACK_SCENARIO),IPP_LIB)
+	PARSE_SCRIPT = $(PARSE_IPP_SCRIPT)
+	PARSED_RAW   = $(LOGS_DIR)/ipp_meas.txt
+	DATA_TO_PLOT = $(PARSED_RAW)
+	## This is set just to have a unified interface in the plotting script
+	NUM_INSTR    = 0
+else ifeq ($(ATTACK_SCENARIO),MICROBENCH)
+	PARSE_SCRIPT = $(PARSE_MICRO_SCRIPT)
+	PARSED_RAW   = /dev/null
+	# When plotting the MICROBENCH test only the first mov is plotted
+	# As it should be always present
+	DATA_TO_PLOT = $(LOGS_DIR)/movs_0_${NUM}.log
+else
+$(error Unkown ATTACK_SCENARIO specified)
+endif
+
 # Used to enable the collection and plotting of performance counters
 ifeq ($(PCM_ENABLED), 1)
         LIBSUBDIRS              += $(PCU_DIR)
@@ -115,35 +132,34 @@ endif
 
 all: $(OUTPUT)
 
-run: clean all
+run: clean all 
+	mkdir -p $(LOGS_DIR)
 	touch $(LOGS_DIR)/out.txt
 	tail -f $(LOGS_DIR)/out.txt & TAIL_PID=$$!
 	$(URTS_LD_LIBRARY_PATH) ./app $(EVENTS) > $(LOGS_DIR)/out.txt || EXIT_CODE=$$?
 	kill -TERM $$TAIL_PID
 	exit $$EXIT_CODE
 
-ifeq ($(ATTACK_SCENARIO),IPP_LIB)
 parse: run
-	$(PARSE_IPP_SCRIPT) $(LOGS_DIR)/measurements.txt > $(LOGS_DIR)/ipp_meas.txt
-
-plot: parse
-	$(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/ipp_meas.txt
-else
-parse: run
-	$(PARSE_SCRIPT) -r ${NUM} -i ${NUM_INSTR}
-
-plot: parse
-	$(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/movs_0_${NUM}.log
+	$(PARSE_SCRIPT) -v -r ${NUM} -i ${NUM_INSTR} $(LOGS_DIR)/measurements.txt > $(PARSED_RAW)
+	## Also calculate the attack success rate if MICROBENCH
+ifeq ($(ATTACK_SCENARIO),MICROBENCH)
 	# The following will compute the success probability based on the first mov
 	$(ATTACK_SUCC_SCRIPT) -j 1 -s $$(( 2 * $(NUM_INSTR) + 1 )) -i 2 \
-	$(LOGS_DIR)/measurements.txt $(LOGS_DIR)/secrets.txt
+		$(LOGS_DIR)/measurements.txt $(LOGS_DIR)/secrets.txt
+endif
 
+plot: parse
+	$(PLOT_SCRIPT) -o $(PLOTS_DIR) $(DATA_TO_PLOT)
+
+ifeq ($(ATTACK_SCENARIO),MICROBENCH)
 plot-all: SHELL:=/bin/bash
 plot-all: parse
 	for i in {1..${NUM_INSTR}}; \
-	do $(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/movs_$$((i-1))_${NUM}.log; \
+		do $(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/movs_$$((i-1))_${NUM}.log; \
 	done
 endif
+
 
 $(OUTPUT): $(BUILDDIRS) $(LIBBUILDDIRS) $(OBJECTS)
 	echo "$(INDENT)[LD]" $(OBJECTS) $(LIBS) -o $(OUTPUT)

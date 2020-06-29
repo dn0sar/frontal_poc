@@ -3,8 +3,8 @@
 #   This file is part of the Frontal attack PoC.
 #
 #   Copyright (C) 2020 Ivan Puddu <ivan.puddu@inf.ethz.ch>,
-#                      Miro Haller <miro.haller@alumni.ethz.ch>
-#                      Moritz Schneider <moritz.schneider@inf.ethz.ch>,
+#                      Miro Haller <miro.haller@alumni.ethz.ch>,
+#                      Moritz Schneider <moritz.schneider@inf.ethz.ch>
 #
 #   The Frontal attack PoC is free software: you can redistribute it
 #   and/or modify it under the terms of the GNU General Public License
@@ -33,6 +33,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import mutual_info_score
 from scipy.stats.stats import pearsonr,spearmanr
+
+from logger import Logger
 
 def calc_mutual_information(x, y, bins):
     c_xy = np.histogram2d(x, y, bins)[0]
@@ -143,6 +145,10 @@ correlate_num       = args.correlate_num
 iter_idx            = 0
 global_run          = args.global_run
 
+logger = Logger(parser.prog)
+logger.title("Attacker success log")
+
+
 if global_run:
     test_size = 1
 
@@ -185,7 +191,7 @@ with open(log_file_path, "r") as log_file:
                     ms_tuples[iter_idx] = (cycles, int(secret))
                     iter_idx += 1
                 else:
-                    print("Iteration skipped. Count was: " + str(len(iter_cycles)))
+                    logger.line("Iteration skipped. Count was: " + str(len(iter_cycles)))
                     skipped += 1
 
                 iter_cycles = []
@@ -197,28 +203,28 @@ with open(log_file_path, "r") as log_file:
 if (not iter_num):
     iter_num = iter_idx
 
-print(f'Detected {iter_idx} iterations')
+logger.line(f'Detected {iter_idx} iterations')
 
 if skipped > 0:
-    print(f'Error: counted an unexpected number of instructions in {skipped} iteration' + ('s' if skipped > 1 else '') + '.')
-    print(f'Please check if the size of one iteration is actually {test_size}.')
-    print('If not re-run, with the correct size. Otherwise the trace is inconsistent.')
+    logger.error(f'Error: counted an unexpected number of instructions in {skipped} iteration' + ('s' if skipped > 1 else '') + '.')
+    logger.error(f'Please check if the size of one iteration is actually {test_size}.')
+    logger.error('If not re-run, with the correct size. Otherwise the trace is inconsistent.')
     del ms_tuples[-skipped:]
 
 
 if skipped == iter_num:
-    print('Aborting..')
+    logger.error('Aborting..')
     exit(-1)
 
 if skipped > 0:
-    print('Inconsistent runs have been discarded..')
+    logger.warning('Inconsistent runs have been discarded..')
 
 if (iter_idx + skipped != iter_num):
-    print(f"ERROR: Number of parsed iterations does not match the "
+    logger.error(f"ERROR: Number of parsed iterations does not match the "
           "expected number ({iter_num})")
     exit(-1)
 
-print('Done parsing..')
+logger.line('Done parsing..')
 
 check_inxes = range(test_size) if measure_all else [measure_inx]
 
@@ -227,24 +233,24 @@ for inx in check_inxes:
     # ms_tuples.sort(key=lambda t:t[0][inx])
     cycles  = [c[inx] for c, _ in ms_tuples]
     secrets = [s for _, s in ms_tuples]
-    cor_coef = np.corrcoef(cycles, secrets)
-    print(f"pearsonr (numpy):\t{cor_coef[0,1]}")
+    # cor_coef = np.corrcoef(cycles, secrets)
+    # logger.line(f"pearsonr (numpy):\t{cor_coef[0,1]}")
 
-    cor_coef = pearsonr(cycles, secrets)
-    print(f"pearsonr (scipy):\t{cor_coef[0]}")
-    print(f"\tp-value:\t{cor_coef[1]}")
+    cor_coef, p_val = pearsonr(cycles, secrets)
+    logger.line(f"pearsonr (scipy):\t{cor_coef}")
+    logger.line(f"\tp-value:\t{p_val}")
 
     # spearmanr
-    cor_coef = spearmanr(cycles, secrets)
-    print(f"spearmanr:\t\t{cor_coef[0]}")
-    print(f"\tp-value:\t{cor_coef[1]}")
+    cor_coef, p = spearmanr(cycles, secrets)
+    logger.line(f"spearmanr:\t\t{cor_coef}")
+    logger.line(f"\tp-value:\t{p_val}")
 
     nr_bins = max(cycles) - min(cycles)
     #mutual information
     mutual_info = calc_mutual_information(cycles, secrets, nr_bins)
-    print(f"Mutual Information:\t{mutual_info}")
+    logger.line(f"Mutual Information:\t{mutual_info}")
 
-print("Trying to correlate multiple timings..")
+logger.line("Trying to correlate multiple timings..")
 
 results = []
 
@@ -260,24 +266,22 @@ for inx in check_inxes:
 
     mean_cycles        = sum(cycles) / iter_num
     if output_file is False:
-        print('\n' +
-              f'Instr index:     {inx}')
-        print(f"Mean:            {mean_cycles}")
-        print(f"Best threshold:  {cycles[inx_best - 1]}")
+        logger.line(f'\n Instr index:     {inx}')
+        logger.line(f"Mean:            {mean_cycles}")
+        logger.line(f"Best threshold:  {cycles[inx_best - 1]}")
 
     # Guess the first half as having executed the fast branch and the
     # the second half the slow branch
     hit_rate_s, direction = hit_rate_sep(secrets, iter_num // 2)
     if output_file is False:
-        print("\n" +
-              f'Hit rate half:   {hit_rate_s}%')
+        logger.line(f'\n Hit rate half:   {hit_rate_s}%')
     #   print(f"Kmeans hit rate: {kmeans_hit}%")
-        print(f"Hit best:        {hit_best}%")
-        print("The fast branch was the " + ('else' if direction else 'first') + " branch")
+        logger.line(f"Hit best:        {hit_best}%")
+        logger.line("The fast branch was the " + ('else' if direction else 'first') + " branch")
     results.append(hit_rate_s)
 
 if output_file is not False:
-    print(f'saving results to {output_file}...')
+    logger.line(f'saving results to {output_file}...')
     np.savetxt(output_file, np.array(results))
 
 print('')
@@ -287,4 +291,4 @@ print('')
 if (correlate_num and test_size - inx > correlate_num):
     guessed_bits = [guess_by_median_multiple(ms_tuples[iter_inx][0], inx, correlate_num, direction) for iter_inx in range(iter_num)]
     hit_rate_median = (len([1 for x in range(iter_num) if guessed_bits[x] == ms_tuples[x][1]]) / iter_num) * 100
-    print(f'Hit rate correlating the median of {correlate_num * 2} instructions: {hit_rate_median}%')
+    logger.line(f'Hit rate correlating the median of {correlate_num * 2} instructions: {hit_rate_median}%')
