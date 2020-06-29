@@ -17,11 +17,9 @@ We introduce a new timing side-channel attack on Intel CPU processors. Our Front
 }
 ```
 
-The paper and the attack are based upon initial observations made during Miro Haller's [Bachelor thesis](https://github.com/Miro-H/bachelor-thesis-sgx), which also contains detailed explanations of the changes we made to the SGX-Step framework.
-
 ## Setup
 
-  - Please follow the installation instructions in the [sgx-step/README.md](sgx-step/README.md) to install SGXStep.
+  - Please follow the installation instructions in [sgx-step/README.md](https://github.com/dn0sar/sgx-step/blob/master/README.md) to install SGXStep.
   
     In short, to do that run the two scripts `install_SGX_driver.sh` and `install_SGX_SDK.sh`.
   Make sure to source the SGXSDK environment file after that.
@@ -45,7 +43,7 @@ The paper and the attack are based upon initial observations made during Miro Ha
 
 ## Configuration
 
-There are several parameters that can be tweaked in [frontal/Makefile.config](frontal/Makefile.config). The most important one is the `SGX_STEP_TIMER_INTERVAL` value that sets up the APIC counter for sgx-step. A suitable value will make sure that the script runs without errors. This value is platform specific see also [sgx-step/README.md](sgx-step/README.md). Note that for the frontal attack we use the a APIC division of 1. Hence, as a rule of thumb the values for the stock SGX-Step need to be roughly doubled to work with our changes.
+There are several parameters that can be tweaked in [frontal/Makefile.config](frontal/Makefile.config). The most important one is the `SGX_STEP_TIMER_INTERVAL` value that sets up the APIC counter for sgx-step. A suitable value will make sure that the script runs without errors. This value is platform specific see also [sgx-step/README.md](https://github.com/dn0sar/sgx-step/blob/master/README.md). Note that for the frontal attack we use the a APIC division of 1. Hence, as a rule of thumb the values for the stock SGX-Step need to be roughly doubled to work with our changes.
 
 Troubleshooting: 
   - Too high values will produce an error similar to the following: 
@@ -134,7 +132,7 @@ A plot is produced in the path given in the last line of the output of the comma
 We use a two different code snippets to mock the `l9_ippsCmp_BN` function. The first is [frontal/Enclave/asm_ipp_mock_sync.S](frontal/Enclave/asm_ipp_mock_sync.S). It contains the original library code with instructions after it to simulate various attack capabilities. This test case is run when `ATTACKER_SYNC` is set to `1` in  [frontal/Makefile.config](frontal/Makefile.config).
 By setting the `ATTACKER_SYNC = 0` the [frontal/Enclave/asm_ipp_mock.S](frontal/Enclave/asm_ipp_mock.S) assembly file is used instead for the attack. This file contains a mock of the `l9_ippsCmp_BN` without any instructions after it. We describe the exact differences between these two test cases below.
 
-A plot from a sample run with `ATTACKER_SYNC = 1` is given below. It plots the distributions of the same instruciton (`mov` to memory), groupped by the path they belong to. The only difference between these instructions is their alignment. Note that each branch only contains 1 `mov` in it.
+A plot from a sample run with `ATTACKER_SYNC = 1` is given below. It plots the distributions of the same instruction (`mov` to memory), groupped by the path they belong to. The only difference between these instructions is their alignment. Note that each branch only contains 1 `mov` in it.
 ![ipp-plot](frontal/plots/scenario_ipp_lib_example_plot.png)
 
 ### **Clarifications about the ATTACKER_SYNC parameter**
@@ -144,8 +142,8 @@ We think that there are two scenarios in which this type of attack could be real
 First, an attacker can leverage hyperthreading to inject these instructions in the front end at the right time, although this is technically challenging. Second, we also hypothesize that this could be observed if the CPU mis-speculates to a path with a couple of consecutive movs. We did not yet test these two scenarios to see if they produce the same effects as `ATTACKER_SYNC=1`.
 
 ## Notes on changes from the mainstream SGX-Step
-If you have an app that worked with the SGX-Step library and want to integrate it with our changes (for instance, if you want to analyze the performance counters values), note that we slightly changed the libsgxstep interface to improve stability. The APIC counter is now automatically set in `aep_trampoline.S` with the value returned from the `aep_cb_fun` in your `main.c` file. Furthermore, we use a divisor of `1` instead of `2` (See [sgx-step/libsgxstep/apic.h](sgx-step/libsgxstep/apic.h)), and we made other changes to improve stability that require a bigger APIC counter value.
+If you have an app that worked with the SGX-Step library and want to integrate it with our changes (for instance, if you want to analyze the performance counters values), note that we slightly changed the libsgxstep interface to improve stability. The APIC counter is now automatically set in `aep_trampoline.S` with the value returned from the `aep_cb_fun` in your `main.c` file. Furthermore, we use a divisor of `1` instead of `2` (See [sgx-step/libsgxstep/apic.h](https://github.com/dn0sar/sgx-step/blob/master/libsgxstep/apic.h), and we made other changes to improve stability that require a bigger APIC counter value.
 
 In short, if you had a working SGX-Step setup, you might need to roughly double your current `SGX_STEP_TIMER_INTERVAL` (and possibly increase it a bit more after that) to make it work with our changes, and have this value as `return` in your `aep_cb_fun` (instead of calling `apic_timer_irq( SGX_STEP_TIMER_INTERVAL )`).
 
-Further details about the changes we made are given in the [SGX-Step README](sgx-step/README.md).
+Further details about the changes we made are given in the [sgx-step/README.md](https://github.com/dn0sar/sgx-step/blob/master/README.md) and in Miro Haller's [Bachelor thesis](https://github.com/Miro-H/sgx-accurate-time-msrmts).
