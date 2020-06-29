@@ -1,10 +1,11 @@
 app
-logs
-plots
+logs/*
+!logs/.keep
+plots/*
+!plots/.keep
 outlier_idx.txt
 plot.pdf
 xlabels.gp
-logs
 
 *.swp
 
@@ -12,3 +13,5 @@ out.txt
 parsed_nop.txt
 parsed_zz.txt
 parsed_strlen.txt
+
+__pycache__

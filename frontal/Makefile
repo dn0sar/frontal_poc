@@ -1,3 +1,13 @@
+MAKEFILE_DIR        = $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+PLOTS_DIR           = $(MAKEFILE_DIR)/plots
+LOGS_DIR            = $(MAKEFILE_DIR)/logs
+SCRIPTS_DIR         = $(MAKEFILE_DIR)/scripts
+
+PARSE_MICRO_SCRIPT  = $(SCRIPTS_DIR)/parse.py
+PARSE_IPP_SCRIPT    = $(SCRIPTS_DIR)/parse_ipp.py
+PLOT_SCRIPT         = $(SCRIPTS_DIR)/plot.py
+ATTACK_SUCC_SCRIPT  = $(SCRIPTS_DIR)/attack_success.py
+
 PROJECT_TOP          = ..
 LIBSGXSTEP_DIR       = $(PROJECT_TOP)/sgx-step
 LIBSGXSTEP           = $(LIBSGXSTEP_DIR)/libsgxstep
@@ -12,7 +22,7 @@ ifeq ($(SGX_SDK),)
     SGX_SDK          = /opt/intel/sgxsdk
 endif
 export SGX_SDK
-ifndef URTS_LD_LIBRARY_PATH 
+ifndef URTS_LD_LIBRARY_PATH
     ifneq ($(SGX_SDK), /opt/intel/sgxsdk)
         URTS_LD_LIBRARY_PATH = LD_LIBRARY_PATH=$(LIBSGXSTEP_DIR)/linux-sgx/psw/urts/linux
     endif
@@ -45,10 +55,31 @@ LDFLAGS             += -lsgx-step -lencl_proxy -lsgx_urts \
                        -L$(LIBSGXSTEP_DIR)/linux-sgx/psw/urts/linux
 
 SOURCES              = $(shell ls *.c)
-PCM_SOURCES          = $(PCU_DIR)/msr.cpp $(PCU_DIR)/cpucounters.cpp $(PCU_DIR)/pci.cpp $(PCU_DIR)/mmio.cpp $(PCU_DIR)/client_bw.cpp $(PCU_DIR)/utils.cpp $(PCU_DIR)/perf_counters.cpp
+PCM_SOURCES          = $(PCU_DIR)/msr.cpp $(PCU_DIR)/cpucounters.cpp \
+                       $(PCU_DIR)/pci.cpp $(PCU_DIR)/mmio.cpp \
+                       $(PCU_DIR)/client_bw.cpp $(PCU_DIR)/utils.cpp \
+                       $(PCU_DIR)/perf_counters.cpp
 PCM_OBJ              = $(PCU_DIR)/mylibPCM.a
 OBJECTS              = $(SOURCES:.c=.o)
 OUTPUT               = app
+
+
+# Set the right envirnment depending on the attack scenario
+ifeq ($(ATTACK_SCENARIO),IPP_LIB)
+	PARSE_SCRIPT = $(PARSE_IPP_SCRIPT)
+	PARSED_RAW   = $(LOGS_DIR)/ipp_meas.txt
+	DATA_TO_PLOT = $(PARSED_RAW)
+	## This is set just to have a unified interface in the plotting script
+	NUM_INSTR    = 0
+else ifeq ($(ATTACK_SCENARIO),MICROBENCH)
+	PARSE_SCRIPT = $(PARSE_MICRO_SCRIPT)
+	PARSED_RAW   = /dev/null
+	# When plotting the MICROBENCH test only the first mov is plotted
+	# As it should be always present
+	DATA_TO_PLOT = $(LOGS_DIR)/movs_0_${NUM}.log
+else
+$(error Unkown ATTACK_SCENARIO specified)
+endif
 
 # Used to enable the collection and plotting of performance counters
 ifeq ($(PCM_ENABLED), 1)
@@ -70,7 +101,9 @@ BUILDDIRS						= $(SUBDIRS:%=build-%)
 LIBBUILDDIRS                    = $(LIBSUBDIRS:%=build-%)
 CLEANDIRS						= $(SUBDIRS:%=clean-%)
 LIBCLEANDIRS                    = $(LIBSUBDIRS:%=clean-%)
-LOGS							= $(wildcard logs/*.log) logs/out.txt logs/secrets.txt logs/measurements.txt logs/ipp_meas.txt
+LOGS							= $(wildcard $(LOGS_DIR)/*.log) $(LOGS_DIR)/out.txt \
+                                  $(LOGS_DIR)/secrets.txt $(LOGS_DIR)/measurements.txt \
+                                  $(LOGS_DIR)/ipp_meas.txt
 
 ifndef NUM
     NUM             = 100
@@ -86,7 +119,8 @@ export ALIGN1
 export ALIGN2
 export SGX_STEP_TIMER_INTERVAL
 
-CFLAGS += -DATTACK_SCENARIO=$(ATTACK_SCENARIO) -DNUM_RUNS=$(NUM) -DPCM_ENABLED=$(PCM_ENABLED) -DNUM_PCMS=${NUM_PCMS}
+CFLAGS += -DATTACK_SCENARIO=$(ATTACK_SCENARIO) -DNUM_RUNS=$(NUM) \
+          -DPCM_ENABLED=$(PCM_ENABLED) -DNUM_PCMS=${NUM_PCMS}
 
 ifdef SGX_STEP_TIMER_INTERVAL
 	CFLAGS += -DSGX_STEP_TIMER_INTERVAL=${SGX_STEP_TIMER_INTERVAL}
@@ -97,41 +131,39 @@ endif
 
 
 all: $(OUTPUT)
-	
-run: clean all
-	mkdir -p logs
-	touch logs/out.txt
-	tail -f logs/out.txt & TAIL_PID=$$!
-	$(URTS_LD_LIBRARY_PATH) ./app $(EVENTS) > logs/out.txt || EXIT_CODE=$$?
+
+run: clean all 
+	mkdir -p $(LOGS_DIR)
+	touch $(LOGS_DIR)/out.txt
+	tail -f $(LOGS_DIR)/out.txt & TAIL_PID=$$!
+	$(URTS_LD_LIBRARY_PATH) ./app $(EVENTS) > $(LOGS_DIR)/out.txt || EXIT_CODE=$$?
 	kill -TERM $$TAIL_PID
 	exit $$EXIT_CODE
 
-ifeq ($(ATTACK_SCENARIO),IPP_LIB)
 parse: run
-	./parse_ipp.py logs/measurements.txt > logs/ipp_meas.txt
-
-plot: parse
-	mkdir -p plots
-	./plot.py -o plots logs/ipp_meas.txt
-else
-parse: run
-	./parse.py -r ${NUM} -i ${NUM_INSTR}
-
-plot: parse
-	mkdir -p plots
-	./plot.py -o plots logs/movs_0_${NUM}.log
+	$(PARSE_SCRIPT) -v -r ${NUM} -i ${NUM_INSTR} $(LOGS_DIR)/measurements.txt > $(PARSED_RAW)
+	## Also calculate the attack success rate if MICROBENCH
+ifeq ($(ATTACK_SCENARIO),MICROBENCH)
 	# The following will compute the success probability based on the first mov
-	./attack_success.py -j 1 -s $$(( 2 * $(NUM_INSTR) + 1 )) -i 2 logs/measurements.txt logs/secrets.txt 
-
-plot-all: SHELL:=/bin/bash
-plot-all: parse
-	mkdir -p plots
-	for i in {1..${NUM_INSTR}}; do ./plot.py -o plots logs/movs_$$((i-1))_${NUM}.log; done
+	$(ATTACK_SUCC_SCRIPT) -j 1 -s $$(( 2 * $(NUM_INSTR) + 1 )) -i 2 \
+		$(LOGS_DIR)/measurements.txt $(LOGS_DIR)/secrets.txt
 endif
 
+plot: parse
+	$(PLOT_SCRIPT) -o $(PLOTS_DIR) $(DATA_TO_PLOT)
+
+ifeq ($(ATTACK_SCENARIO),MICROBENCH)
+plot-all: SHELL:=/bin/bash
+plot-all: parse
+	for i in {1..${NUM_INSTR}}; \
+		do $(PLOT_SCRIPT) -o $(PLOTS_DIR) $(LOGS_DIR)/movs_$$((i-1))_${NUM}.log; \
+	done
+endif
+
+
 $(OUTPUT): $(BUILDDIRS) $(LIBBUILDDIRS) $(OBJECTS)
-	echo "$(INDENT)[LD]" $(OBJECTS) $(LIBS) -o $(OUTPUT) 
-	$(LD) $(OBJECTS) $(LDFLAGS) -o $(OUTPUT) 
+	echo "$(INDENT)[LD]" $(OBJECTS) $(LIBS) -o $(OUTPUT)
+	$(LD) $(OBJECTS) $(LDFLAGS) -o $(OUTPUT)
 
 %.o : %.c
 	echo "$(INDENT)[CC] " $<

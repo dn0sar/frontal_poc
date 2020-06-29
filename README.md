@@ -147,3 +147,5 @@ First, an attacker can leverage hyperthreading to inject these instructions in t
 If you have an app that worked with the SGX-Step library and want to integrate it with our changes (for instance, if you want to analyze the performance counters values), note that we slightly changed the libsgxstep interface to improve stability. The APIC counter is now automatically set in `aep_trampoline.S` with the value returned from the `aep_cb_fun` in your `main.c` file. Furthermore, we use a divisor of `1` instead of `2` (See [sgx-step/libsgxstep/apic.h](sgx-step/libsgxstep/apic.h)), and we made other changes to improve stability that require a bigger APIC counter value.
 
 In short, if you had a working SGX-Step setup, you might need to roughly double your current `SGX_STEP_TIMER_INTERVAL` (and possibly increase it a bit more after that) to make it work with our changes, and have this value as `return` in your `aep_cb_fun` (instead of calling `apic_timer_irq( SGX_STEP_TIMER_INTERVAL )`).
+
+Further details about the changes we made are given in the [SGX-Step README](sgx-step/README.md).
