@@ -11,7 +11,7 @@ OBJECTS		  = encl.o asm_secret_branch.o
 LIB_SGX_TRTS      = -lsgx_trts
 LIB_SGX_TSERVICE  = -lsgx_tservice
 
-ifeq ($(ATTACKER_SYNC),0)
+ifeq ($(INLINED_CALL),0)
 	OBJECTS += asm_ipp_mock.o
 else
 	OBJECTS += asm_ipp_mock_sync.o

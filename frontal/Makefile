@@ -45,7 +45,7 @@ else
 endif
 
 include Makefile.config
-export ATTACKER_SYNC
+export INLINED_CALL
 
 CFLAGS              += -fPIC -fno-stack-protector -fno-builtin -fno-jump-tables \
                        -fno-common -Wno-attributes -g -D_GNU_SOURCE -O0

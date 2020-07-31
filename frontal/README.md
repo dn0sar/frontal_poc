@@ -54,4 +54,4 @@ The victim function can be found in [Enclave/asm_secret_branch.S](Enclave/asm_se
 The following parameters are only relevant if `ATTACK_SCNEARIO=IPP_LIB`, and are otherwise ignored.
 This attack target attacks a mock of the `l9_ippsCmp_BN` function from the IPP library v2.9 as described in the main [README.md](../README.md).
 
-- **ATTACKER_SYNC**: can be either `0` or `1`. If set to `0` the binary used for the attack is [Enclave/asm_ipp_mock.S](Enclave/asm_ipp_mock.S), otherwise [Enclave/asm_ipp_mock_sync.S](Enclave/asm_ipp_mock_sync.S) is used.
+- **INLINED_CALL**: can be either `0` or `1`. If set to `0` the binary used for the attack is [Enclave/asm_ipp_mock.S](Enclave/asm_ipp_mock.S), otherwise [Enclave/asm_ipp_mock_sync.S](Enclave/asm_ipp_mock_sync.S) is used.
