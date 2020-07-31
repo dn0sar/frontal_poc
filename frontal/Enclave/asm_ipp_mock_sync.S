@@ -50,11 +50,14 @@ asm_ipp:
 .space 0x1
 .end:
     movb $0, (%r11)       # Stop recording instructions
-/* These are instructions that an attacker should sync from another
- * core in between the target branch mov (the last one in the equal,
- * greater, and smaller path below) and the return from the function.
- * The more instructions she can put before the function returns (at
- * the right alignment), the more pronunced the difference will be.
+/* These are instructions that a victim binary can have after the
+ * function call, and that become relevant when inlined.
+ * Inlining is not the only way to introduce subsequent movs.
+ * The CPU can also mispeculate to a path wich contains them
+ * or an attacker could theoretically achieve this by injecting
+ * them from a sibling virtual core.
+ * The more instructions the attacker can put before the function
+ * returns, the more pronunced the difference will be.
  */
     mov %ecx, (%rdx)
     mov %ecx, (%rdx)
