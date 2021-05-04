@@ -33,56 +33,7 @@
 // see asm_secret_branch.S
 extern void asm_secret_branch(uint8_t *do_cnt_instr, uint8_t secret, uint64_t *arr);
 
-inline void asm_ipp(uint64_t *num1, uint64_t *num2, int size, uint64_t *res, uint8_t *do_cnt_instr) {
-    __asm__ volatile(
-        ".align 0x10\n"
-        ".equal_end:\n"
-        "    mov     %ecx, (%rdx)             # 8\n"
-        "    xor     %eax, %eax               # 9\n"
-        "    jmp end                         # 10\n"
-
-        ".align 0x10\n"
-        "l9_ippsCmp_BN:\n"
-        "    mov     -8(%r10, %rax, 1), %rdi  # 0\n"
-        "    mov     -8(%r9,  %rax, 1), %rsi  # 1\n"
-
-        "    cmp     %rsi, %rdi               # 2\n"
-        "    ja      .greater                 # 2\n"
-        "    sub     $8, %rax                 # 3\n"
-        "    cmp     %rsi, %rdi               # 4\n"
-        "    jb      .smaller                 # 4\n"
-        "    cmp     %rax, %r8                # 5\n"
-        "    jnz     l9_ippsCmp_BN            # 5\n"
-
-
-        // Out of the loop -> Equal path
-        "    xor     %ecx, %ecx               # 6\n"
-        "    jmp     .equal_end               # 7\n"
-        ".align 0x8\n"
-        "    jge .smaller\n"
-        ".greater:\n"
-        "    test    %ecx, %ecx               # 3\n"
-        "    setz    %cl                      # 4\n"
-        "    xor     %eax, %eax               # 5\n"
-        "    movzx   %cl, %ecx                # 6\n"
-        "    inc     %ecx                     # 7\n"
-        "    mov     %ecx, (%rdx)             # 8\n"
-        "    jmp end                         # 9\n"
-            
-
-        ".align 0x10\n"
-        ".smaller:\n"
-        "    test    %ecx, %ecx               # 5\n"
-        "    setz    %cl                      # 6\n"
-        "    xor     %eax, %eax               # 7\n"
-        "    movzx   %cl, %ecx                # 8\n"
-        "    inc     %ecx                     # 9\n"
-        "    mov     %ecx, (%rdx)             # 10\n"
-        "    jmp end                         # 11\n"
-    );
-end:
-    return;
-}
+extern void asm_ipp(uint64_t *num1, uint64_t *num2, int size, uint64_t *res, uint8_t *do_cnt_instr);
 
 void do_asm_secret_branch(uint8_t *do_cnt_instr, uint8_t *secret_arr,
                            int secret_arr_size)
@@ -132,6 +83,6 @@ void *get_asm_secret_branch_adrs( void )
 
 void *get_asm_ipp_adrs( void )
 {
-    return do_asm_ipp;
+    return asm_ipp;
 }
 
