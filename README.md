@@ -85,8 +85,9 @@ Then restart your computer and select `Linux 4.15.0-46-generic` while booting. I
 
 There are several parameters that can be tweaked in [frontal/Makefile.config](frontal/Makefile.config). The most important one is the `SGX_STEP_TIMER_INTERVAL` value that sets up the APIC counter for sgx-step. A suitable value will make sure that the script runs without errors. This value is platform specific see also [sgx-step/README.md](https://github.com/dn0sar/sgx-step/blob/master/README.md). Note that for the frontal attack we use the a APIC division of 1. Hence, as a rule of thumb the values for the stock SGX-Step need to be roughly doubled to work with our changes.
 
-Troubleshooting: 
-  - Too high values will produce an error similar to the following: 
+Troubleshooting:
+  - The best way to get started is to try to run the [sgx-step/app/bench-improved](sgx-step/app/bench-improved) benchmark. Please set the `SGX_STEP_TIMER_INTERVAL` and `NUM` in [sgx-step/app/bench-improved/Makefile.config](sgx-step/app/bench-improved/Makefile.config) for this benchmark. We reccoment to start with a low `NUM` value and then try to increase it when a suitable value for `SGX_STEP_TIMER_INTERVAL` has been found. Too low values for `SGX_STEP_TIMER_INTERVAL` will incur in zero-stepping, which should give an error in the output of the execution. Too high values will skip instructioins. An appropriate value will produce an output containing the following line: `Detected 10000 of 10000 instructions`.
+  - Once a correct value is found for [bench-improved](sgx-step/app/bench-improved), the same can be used on [frontal/Makefile.config](frontal/Makefile.config) to run the PoC. Depending on the machine the value obtained with the benchmark might need to be slightly adjusted to run with the PoC (+/-5 at most). Too high values will produce an error similar to the following: 
     ```
     [main.c] ERROR: Detected 10000 abnormal runs.. Try to tweak the SGX_STEP_TIMER_INTERVAL value. (Currently it's probably too high)
     ```
@@ -101,9 +102,10 @@ There are several other parameters that can be played with in [frontal/Makefile.
 
 Follow these few steps to run the PoC for the Frontal attack. This PoC executes two identical branches containing only `mov` and `test` instructions after each other. A secret value decides which path is taken at each iteration. The attacker then sees a list of timings and based on those tries to detect which of the two identical branches is executed. The number of instructions in the branches can be configured as well as their initial alignments.
 
-1. Go to the frontal poc: `cd frontal`
-2. Make sure that the variable `ATTACK_SCENARIO` in [Makefile.config](Makefile.config) is set to `MICROBENCH` to run this PoC.
-3. The command `make plot` runs the tests, plots the results and calculates the attack success probability
+1. Make sure that the SGX-Step kernel module has been loaded since the last reboot (`make load -C sgx-step/kernel`)
+2. Go to the frontal poc directory: `cd frontal`
+3. Make sure that the variable `ATTACK_SCENARIO` in [Makefile.config](Makefile.config) is set to `MICROBENCH` to run this PoC.
+4. The command `make plot` runs the tests, plots the results and calculates the attack success probability
     - Plots are saved in the plot folder. Note that if the peaks for the two branches are not overlapping the CPU is vulnerable
     - Two attack success probabilities are then printed. For example:
         ```
@@ -137,9 +139,10 @@ There are two ways to make the code not exploitable.
 
 Follow these few steps to run the PoC for the Frontal attack against a mock of the IPP library.
 
-1. Go to the frontal folder: `cd frontal`
-2. Make sure that the variable `ATTACK_SCENARIO` in [frontal/Makefile.config](frontal/Makefile.config) is set to `IPP_LIB` to run this PoC.
-3. The command `make plot` runs the tests and plots the results
+1. Make sure that the SGX-Step kernel module has been loaded since the last reboot (`make load -C sgx-step/kernel`)
+2. Go to the frontal folder: `cd frontal`
+3. Make sure that the variable `ATTACK_SCENARIO` in [frontal/Makefile.config](frontal/Makefile.config) is set to `IPP_LIB` to run this PoC.
+4. The command `make plot` runs the tests and plots the results
     - Plots are saved in the plot folder. Note that if the peaks for the two branches are not overlapping the CPU is vulnerable
     - The script prints the average time it took to execute each path. Whenever these averages differ significantly the attacker can distinguish between them.
         ```
