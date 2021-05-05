@@ -4,7 +4,7 @@ The paper containing the details of the Frontal attack can be found [here](https
 
 ## Abstract
 
-We introduce a new timing side-channel attack on Intel CPU processors. Our Frontal attack exploits the way that CPU frontend fetches and processes instructions while being interrupted. In particular, we observe that in modern Intel CPUs, some instruction's execution times will depend on which operations precede and succeed them, and on their virtual addresses. Unlike previous attacks that could only profile branches if they contained different code or were based on conditional jumps, the attack allows the adversary to distinguish between instruction-wise identical branches. As the attack requires OS capabilities to set the interrupts, we use it to exploit SGX enclaves. Our attack demonstrates that a realistic SGX attacker can always observe the full enclave instruction trace, and secret-depending branching should not be used even alongside defenses to current controlled-channel attacks. We show that the adversary can use the Frontal attack to extract a secret from an SGX enclave if that secret was used as a branching condition for two instruction-wise identical branches. The attack can be exploited against several crypto libraries and affects all Intel CPUs.
+We introduce a new timing side-channel attack on Intel CPU processors. Our _Frontal_ attack exploits timing differences that arise from how the CPU frontend fetches and processes instructions while being interrupted. In particular, we observe that in modern Intel CPUs, some instructions' execution times will depend on which operations precede and succeed them, and on their virtual addresses. Unlike previous attacks that could only profile branches if they contained different code or had known branch targets, the _Frontal_ attack allows the adversary to distinguish between instruction-wise identical branches. As the attack requires OS capabilities to set the interrupts, we use it to exploit SGX enclaves. Our attack further demonstrates that secret-dependent branches should not be used even alongside defenses to current controlled-channel attacks. We show that the adversary can use the _Frontal_ attack to extract a secret from an SGX enclave if that secret was used as a branching condition for two instruction-wise identical branches. We use the attack to leak information from two cryptographic libraries and show that it affects all Intel CPUs with SGX.
 
 ```
 @misc{puddu2020frontal,
@@ -19,7 +19,9 @@ We introduce a new timing side-channel attack on Intel CPU processors. Our Front
 
 ## Setup
 
-  - Please follow the installation instructions in [sgx-step/README.md](https://github.com/dn0sar/sgx-step/blob/master/README.md) to install SGXStep.
+  - Please execute `git submodule update --init --recursive` after checking out the repository to fetch all the submodules
+
+  - Follow the installation instructions in [sgx-step/README.md](https://github.com/dn0sar/sgx-step/blob/master/README.md) to install SGXStep.
   
     In short, to do that run the two scripts `install_SGX_driver.sh` and `install_SGX_SDK.sh`.
   Make sure to source the SGXSDK environment file after that.
@@ -40,6 +42,44 @@ We introduce a new timing side-channel attack on Intel CPU processors. Our Front
     ```
     pip3 install -r frontal/requirements.txt
     ```
+
+### Stability Issues
+
+The PoC might be unstable in your system, causing it to freeze to the point of needing to remove power in order to reboot it. This is most likely due to the user-space interrupt handler of SGX-Step causing a general protection fault in the kernel while single-stepping (if this applies to your system you should see `#GPF` errors on `dmesg` when trying to run the PoC). We have included a Ubuntu kernel patch to mitigate this issue and make single-stepping more stable. You can find the patch in the [kernel_patch](kernel_patch) directory. The patch should be applied on top of `Ubuntu-hwe-4.15.0-46.49_16.04.1`. To apply the patch to your system follow these steps (tested on Ubuntu 16 and 18):
+
+- Clone the kernel source and apply the patch:
+```
+git clone git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git`
+
+cd ubuntu-xenial
+
+git checkout 595e176eed1fa6de3ac79ea9eacb7c82ac2853a3
+
+git am ../kernel_patch/0001-Avoids-enabling-ints-if-it-might-jump-to-userspace.patch
+```
+
+- Now compile the kernel (note: this might take up to a couple of hours to execute on your machine.):
+
+```
+sudo apt-get build-dep linux linux-image-$(uname -r)
+
+LANG=C fakeroot debian/rules clean`
+
+LANG=C fakeroot debian/rules binary-headers binary-generic binary-perarch
+```
+
+
+This should produce several `.deb` packages on the top level directory from where the kernel was compiled.
+Alternatively, we have provided the precompiled `.deb` packages on [kernel_patch/pre-built](kernel_patch/pre-built).
+
+Now to install the packages execute the following command:
+
+- `dpkg -i linux*fixandnotpr2*.deb`
+
+Then restart your computer and select `Linux 4.15.0-46-generic` while booting. If the installation was successful `uname -a` should contain the following string:
+
+- `4.15.0-46-generic #49~16.04.112+fixandnotpr2`
+
 
 ## Configuration
 
@@ -74,7 +114,7 @@ Follow these few steps to run the PoC for the Frontal attack. This PoC executes 
 
 The `MICROBENCH` scenario is set up with two blanaced branches that contain many `test` and `mov` instructions. The alignment of the branches can be changes with the `ALIGN1` and `ALIGN2` variables in [Makefile.config](Makefile.config). 
 
-An plot from a test run with the default parameters is given below, showing the timing distributions of the same instruction, but groupped with the branch at which they belong to.
+A plot from a test run with the default parameters is given below, showing the timing distributions of the same instruction, but groupped with the branch at which they belong to.
 
 ![microbench-plot](frontal/plots/scenario_microbench_example_plot.png)
 
@@ -90,7 +130,7 @@ There are two ways to make the code not exploitable.
 1. Remove secret dependent branches (especially the ones that have a write to memory in them).
 2. If a secret dependent branch with a write to memory must be present, the memory writes in them must be aligned the same way modulo 16 (see paper).
 
-**Note1:** We run the library in our framework by copying the assembly code of the `l9_ippsCmp_BN` function rather than calling the library directly. The assembly code we use contains the same instructions and is aligned the same way as the original IPP library. Since the binaries are virtually identical, if the attack is possible with our mock version, it is possible also with the full library. It just requires more effort to adapt our framework to and synchronize the attack with a full library.
+**Note1:** We run the library in our framework by copying the assembly code of the `l9_ippsCmp_BN` function rather than calling the library directly. The assembly code we use contains the same instructions and is aligned the same way as the original IPP library. Since the binaries are virtually identical, if the attack is possible with our mock version, it is possible also with the full library. It just requires more effort to adapt our framework to synchronize the attack with a full library.
 
 **Note2:** As in SGX-Step, our framework also allows us to measure the number of instructions. We also report the detected number of instructions in our output. Each branch has a different number of instructions (196, 197, 198). This alone would also allow the attacker to exploit this function. But even if the number of instructions were the same, the frontal attack would still succeed.
 
@@ -99,7 +139,7 @@ Follow these few steps to run the PoC for the Frontal attack against a mock of t
 
 1. Go to the frontal folder: `cd frontal`
 2. Make sure that the variable `ATTACK_SCENARIO` in [frontal/Makefile.config](frontal/Makefile.config) is set to `IPP_LIB` to run this PoC.
-3. The command `make plot` runs the tests, plots the results
+3. The command `make plot` runs the tests and plots the results
     - Plots are saved in the plot folder. Note that if the peaks for the two branches are not overlapping the CPU is vulnerable
     - The script prints the average time it took to execute each path. Whenever these averages differ significantly the attacker can distinguish between them.
         ```
@@ -136,13 +176,9 @@ A plot from a sample run with `INLINED_CALL = 1` is given below. It plots the di
 ![ipp-plot](frontal/plots/scenario_ipp_lib_example_plot.png)
 
 ### **Clarifications about the INLINED_CALL parameter**
-By running the exact copy of the new version of the IPP library (by setting `INLINED_CALL = 0`), you will notice that the current version does not seem vulnerable to the frontal attack. Of course, the function itself is still vulnerable because we can count the number of instructions and, by that, correctly estimate the path taken. Besides the instruction number, the order of the instructions in the equal path is also different compared to the other paths (the xor gets executed after the mov). Hence, the equal path can also be distinguished by observing the execution timing of a particular (unknown) instruction. However, if the branches would have the same number and type of instructions in them (and in the same order), the frontal attack cannot distinguish between the alignment of the `movs` currently used in the `l9_ippsCmp_BN` function. With `INLINED_CALL = 1`, we want to highlight a small change that makes it vulnerable again, by keeping the same alignment. In the test run with `INLINED_CALL=1`, we add several `movs` before the final return is performed. We do not change any of the branches themselves, only the instructions executed after them right before the return instruction.
+By running the exact copy of the new version of the IPP library (by setting `INLINED_CALL = 0`), you will notice that the current version does not seem vulnerable to the frontal attack. With `INLINED_CALL = 1`, we want to highlight a small change that makes it vulnerable again, by keeping the same alignment. In the test run with `INLINED_CALL=1`, we add several `movs` before the final return is performed. We do not change any of the branches themselves, only the instructions executed after them right before the return instruction.
 With these additional `movs,` the branches are clearly distinguishable, despite the fact that the subsequent movs are not even interrupted (they are just present in the speculated instructions stream).
-We think that there are three scenarios in which this type of attack could be realistic.
-First, if the function is included inlined it is not unlikely that the calling function contains other movs after the function call.
-Second, we also hypothesize that this could be observed if the CPU mis-speculates to a path with a couple of consecutive movs.
-Third, an attacker can leverage hyperthreading to inject these instructions in the front end at the right time, although this is technically challenging as we observed that hyperthreading in general makes the exploited timing differences disappear.
-We did not yet test these last two scenarios to see if they produce the same effects as `INLINED_CALL=1`.
+We think this scenarios is important in that it highlights that if the function is included inlined by another program, the security of the execution depends on whether the caller contains other movs after the function call.
 
 ## Notes on changes from the mainstream SGX-Step
 If you have an app that worked with the SGX-Step library and want to integrate it with our changes (for instance, if you want to analyze the performance counters values), note that we slightly changed the libsgxstep interface to improve stability. The APIC counter is now automatically set in `aep_trampoline.S` with the value returned from the `aep_cb_fun` in your `main.c` file. Furthermore, we use a divisor of `1` instead of `2` (See [sgx-step/libsgxstep/apic.h](https://github.com/dn0sar/sgx-step/blob/master/libsgxstep/apic.h), and we made other changes to improve stability that require a bigger APIC counter value.
