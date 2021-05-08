@@ -28,7 +28,7 @@ We introduce a new timing side-channel attack on Intel CPU processors. Our _Fron
 
   - The following boot kernel parameters must be specified:
     ```
-    nox2apic iomem=relaxed no_timer_check isolcpus=1 nowatchdog nosmep nosmap
+    nox2apic iomem=relaxed no_timer_check isolcpus=1 nmi_watchdog=0 nowatchdog clocksource=tsc nosmep nosmap nopti
     ```
 
   - Make sure that the kernel module is loaded
