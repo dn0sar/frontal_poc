@@ -34,7 +34,10 @@ NR_OF_INST = int(sys.argv[1])
 ALIGN1 = sys.argv[2]
 ALIGN2 = sys.argv[3]
 
-prepare = "\ttest %rax, %rax\n"
+## Any 3 bytes long instruction as prepare instruction will produce the same effects.
+## For instance, a 'test register to register' can also be used instead of a 3 bytes add
+#prepare = "\ttest %rax, %rax\n"
+prepare = "\tadd %rax, %rax\n"
 asm_code = "\tmov %rcx, -8(%rsp)\n"
 
 template = string.Template(
