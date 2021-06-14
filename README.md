@@ -8,7 +8,7 @@ We introduce a new timing side-channel attack on Intel CPU processors. Our _Fron
 We show that the adversary can use the Frontal attack to extract a secret from an SGX enclave if that secret was used as a branching condition for two instruction-wise identical branches. We successfully tested the attack on all the available Intel CPUs with SGX (until 10th gen) and used it to leak information from two commonly used cryptographic libraries.
 
 ```
-@inproceedings{puddu2020frontal,
+@inproceedings{puddu2021frontal,
     title={Frontal Attack: Leaking Control-Flow in SGX via the CPU Frontend},
     author={Ivan Puddu and Moritz Schneider and Miro Haller and Srdjan Čapkun},
     booktitle = {30th {USENIX} Security Symposium ({USENIX} Security 21)},
