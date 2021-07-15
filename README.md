@@ -54,7 +54,7 @@ The PoC might be unstable in your system, causing it to freeze to the point of n
 
 - Clone the kernel source and apply the patch:
 ```
-git clone git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git`
+git clone git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git
 
 cd ubuntu-xenial
 
@@ -63,7 +63,7 @@ git checkout 595e176eed1fa6de3ac79ea9eacb7c82ac2853a3
 git am ../kernel_patch/0001-Avoids-enabling-ints-if-it-might-jump-to-userspace.patch
 ```
 
-- Now compile the kernel (note: this might take up to a couple of hours to execute on your machine.):
+- Now compile the kernel (note: this might take up to a couple of hours to execute on your machine):
 
 ```
 sudo apt-get build-dep linux linux-image-$(uname -r)
