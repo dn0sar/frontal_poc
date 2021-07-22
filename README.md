@@ -9,10 +9,11 @@ We show that the adversary can use the Frontal attack to extract a secret from a
 
 ```
 @inproceedings{puddu2021frontal,
-    title={Frontal Attack: Leaking Control-Flow in SGX via the CPU Frontend},
+    title={Frontal Attack: Leaking Control-Flow in {SGX} via the {CPU} Frontend},
     author={Ivan Puddu and Moritz Schneider and Miro Haller and Srdjan Čapkun},
     booktitle = {30th {USENIX} Security Symposium ({USENIX} Security 21)},
     year={2021},
+    url={https://www.usenix.org/conference/usenixsecurity21/presentation/puddu},
     publisher = {{USENIX} Association},
     month = aug,
 }
