@@ -1,6 +1,6 @@
 # Frontal Attack PoC
 
-The paper containing the details of the Frontal attack can be found [here](https://arxiv.org/pdf/2005.11516.pdf).
+The paper containing the details of the Frontal attack can be found [here](https://www.usenix.org/system/files/sec21-puddu.pdf).
 
 ## Abstract
 
